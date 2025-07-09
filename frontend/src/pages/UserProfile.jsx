@@ -4,7 +4,7 @@ import { User, Mail, Phone, MapPin, Calendar, BookOpen, Award, Edit2, Camera, Gr
 const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({
-    name: "Benzzz",
+    name: "Meowww",
     email: "ushavink0812@gmail.com",
     phone: " +91 9945438905",
     location: "Bengaluru, India",
