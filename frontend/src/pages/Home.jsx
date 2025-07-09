@@ -21,7 +21,7 @@ const courses = [
     progress: 45,
     rating: 4.9,
     students: 892,
-    duration: "6 hours",
+    duration: "7 hours",
     level: "Intermediate",
     category: "CSS"
   },
