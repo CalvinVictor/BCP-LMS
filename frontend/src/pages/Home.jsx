@@ -10,7 +10,7 @@ const courses = [
     progress: 70,
     rating: 4.8,
     students: 1234,
-    duration: "8 hours",
+    duration: "12 hours",
     level: "Beginner",
     category: "Frontend"
   },
