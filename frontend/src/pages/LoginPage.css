@@ -28,22 +28,33 @@ body {
   width: 100%;
   height: 100vh;
   overflow: hidden;
-
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Background video */
+/* Vanta.js background - replaces video background */
+.vanta-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+/* Remove or comment out the old video background styles */
+/*
 .background-video {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover; /* change to contain if you want no crop */
+  object-fit: cover;
   z-index: -1;
 }
+*/
 
 .login-container {
   width: 100%;
@@ -51,7 +62,8 @@ body {
   max-width: 500px;
   padding: 2rem 1.5rem;
   border-radius: 0.5rem;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 1;
@@ -101,7 +113,7 @@ body {
   position: relative;
   margin: 1.5rem 0;
   text-align: center;
-  background: #fff;
+  background: transparent;
 }
 
 .login-container .separator span {
@@ -109,7 +121,7 @@ body {
   font-weight: 500;
   color: #6652BE;
   position: relative;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
   font-size: 1.06rem;
   padding: 0 0.9rem;
 }
@@ -141,10 +153,12 @@ body {
   border: 1px solid #bfb3f2;
   padding: 0px 1.25rem 0 3.12rem;
   transition: 0.2s ease;
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .login-form .input-field:focus {
   border-color: #5F41E4;
+  background: rgba(255, 255, 255, 1);
 }
 
 .login-form .input-field::placeholder {
@@ -237,7 +251,7 @@ body {
 
 .container-video {
   width: 100%;
-  max-height: 50px; /* ⬅️ LIMIT THE HEIGHT */
+  max-height: 50px;
   object-fit: cover;
   border-radius: 0.5rem;
   display: block;
