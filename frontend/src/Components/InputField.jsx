@@ -1,7 +1,7 @@
 import { useState } from "react";
-
 const InputField = ({ type, placeholder, icon }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
+
   return (
     <div className="input-wrapper">
       <input
