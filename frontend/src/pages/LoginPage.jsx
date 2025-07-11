@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";  // ✅ Keep this import here
 import * as THREE from "three";
 import NET from "vanta/dist/vanta.net.min";
 
@@ -23,11 +24,11 @@ const LoginPage = () => {
   });
   const [message, setMessage] = useState({ text: "", type: "" });
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate(); // ✅ Add navigation hook
+  const navigate = useNavigate();
 
   const vantaRef = useRef(null);
 
-  // Vanta.js Background Animation
+  // Vanta Background
   useEffect(() => {
     const effect = NET({
       el: vantaRef.current,
@@ -40,56 +41,80 @@ const LoginPage = () => {
       maxDistance: 20.0,
       spacing: 18.0,
     });
-    return () => {
-      if (effect) effect.destroy();
-    };
+    return () => effect.destroy();
   }, []);
 
-  // Form Field Handler
+  // Input Change
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Password Visibility Toggle
+  // Toggle Password
   const togglePasswordVisibility = (field) => {
     setShowPassword({ ...showPassword, [field]: !showPassword[field] });
   };
 
-  // Alert Message
+  // Show Alert
   const showMessage = (text, type) => {
     setMessage({ text, type });
-    setTimeout(() => setMessage({ text: "", type: "" }), 5000);
+    setTimeout(() => setMessage({ text: "", type: "" }), 4000);
   };
 
-  // Form Submit with navigation
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+  // Login/Register Submit
+// Inside your component:
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      showMessage("Passwords do not match!", "error");
-      setIsLoading(false);
-      return;
-    }
+  if (!isLogin && formData.password !== formData.confirmPassword) {
+    showMessage("Passwords do not match!", "error");
+    setIsLoading(false);
+    return;
+  }
 
-    if (!isLogin && formData.password.length < 8) {
-      showMessage("Password must be at least 8 characters long!", "error");
-      setIsLoading(false);
-      return;
-    }
+  if (!isLogin && formData.password.length < 8) {
+    showMessage("Password must be at least 8 characters long!", "error");
+    setIsLoading(false);
+    return;
+  }
 
-    setTimeout(() => {
-      if (isLogin) {
-        showMessage(`Welcome back! Logging in as ${role}...`, "success");
-        setTimeout(() => navigate("/home"), 1000);  // ✅ Navigate to Home
-      } else {
-        showMessage(`Account created successfully! Welcome to SJU Courses!`, "success");
-        setTimeout(() => navigate("/profile"), 1000);  // ✅ Navigate to Profile
-      }
-      setIsLoading(false);
-    }, 1500);
-  };
+  try {
+    const url = isLogin
+      ? "http://localhost:5000/api/auth/login"
+      : "http://localhost:5000/api/auth/register";
 
+    // Prepare data to send
+    const payload = isLogin
+      ? { email: formData.email, password: formData.password }
+      : {
+          username: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: role,
+        };
+
+    const { data } = await axios.post(url, payload);
+
+    showMessage(`Welcome ${data.user.name}`, "success");
+
+    // Save token
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.user.role);
+    localStorage.setItem("username", data.user.name);
+
+    // Redirect after 1 second
+    setTimeout(() => navigate("/home"), 1000);
+  } catch (error) {
+    console.error(error);
+    showMessage(error.response?.data?.error || "An error occurred", "error");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+
+  // Social Login Click
   const handleSocialLogin = (provider) => {
     showMessage(`${provider} login would be integrated here`, "success");
   };
@@ -101,7 +126,6 @@ const LoginPage = () => {
       <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           <div className="bg-white bg-opacity-5 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white border-opacity-10">
-            
             {/* Header */}
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent mb-2">
