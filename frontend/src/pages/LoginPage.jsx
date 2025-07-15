@@ -103,7 +103,16 @@ const handleSubmit = async (e) => {
     localStorage.setItem("username", data.user.name);
 
     // Redirect after 1 second
-    setTimeout(() => navigate("/home"), 1000);
+    setTimeout(() => {
+  if (data.user.role === "instructor") {
+    navigate("/instructorhome");
+  } else if (data.user.role === "student") {
+    navigate("/home");
+  } else {
+    navigate("/home"); // maybe admin or unknown
+  }
+}, 1000);
+
   } catch (error) {
     console.error(error);
     showMessage(error.response?.data?.error || "An error occurred", "error");
