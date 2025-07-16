@@ -35,11 +35,11 @@ const LoginPage = () => {
       THREE,
       mouseControls: true,
       touchControls: true,
-      color: 0x6366f1,
-      backgroundColor: 0x111827,
+      color: 0x636611,
+      backgroundColor: 0x1127,
       points: 12.0,
-      maxDistance: 20.0,
-      spacing: 18.0,
+      maxDistance: 25.0,
+      spacing: 19.0,
     });
     return () => effect.destroy();
   }, []);
@@ -83,7 +83,6 @@ const handleSubmit = async (e) => {
       ? "http://localhost:5000/api/auth/login"
       : "http://localhost:5000/api/auth/register";
 
-    // Prepare data to send
     const payload = isLogin
       ? { email: formData.email, password: formData.password }
       : {
@@ -95,23 +94,31 @@ const handleSubmit = async (e) => {
 
     const { data } = await axios.post(url, payload);
 
-    showMessage(`Welcome ${data.user.name}`, "success");
+    // Role check during login
+    if (isLogin && data.user.role !== role) {
+      showMessage(`You are registered as ${data.user.role}. Please switch role to login.`, "error");
+      setIsLoading(false);
+      return;
+    }
 
-    // Save token
+    showMessage(`Welcome ${data.user.username}`, "success");
+
     localStorage.setItem("token", data.token);
     localStorage.setItem("role", data.user.role);
-    localStorage.setItem("username", data.user.name);
+    localStorage.setItem("username", data.user.username);
 
-    // Redirect after 1 second
     setTimeout(() => {
-  if (data.user.role === "instructor") {
-    navigate("/instructorhome");
-  } else if (data.user.role === "student") {
-    navigate("/home");
-  } else {
-    navigate("/home"); // maybe admin or unknown
-  }
-}, 1000);
+          if (data.user.role === "instructor") {
+  navigate("/instructorhome");
+} else if (data.user.role === "student") {
+  navigate("/home");
+} else if (data.user.role === "admin") {
+  navigate("/adminhome");
+} else {
+  navigate("/home"); // fallback
+}
+
+    }, 1000);
 
   } catch (error) {
     console.error(error);
@@ -120,6 +127,7 @@ const handleSubmit = async (e) => {
     setIsLoading(false);
   }
 };
+
 
 
 

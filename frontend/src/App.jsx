@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import InstructorDashboard from "./pages/Instructorhome"; // already imported
 import About from "./pages/about";
 import UserProfile from "./pages/UserProfile";
+import AdminHome from "./pages/AdminHome";
  // 🆕 import this if you haven't
 
 function App() {
@@ -13,7 +14,7 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/home" element={<Home />} />
         <Route path="/instructorhome" element={<InstructorDashboard />} />
-      
+        <Route path="/adminhome" element={<AdminHome />} />
         <Route path="/about" element={<About />} />
         <Route path="/profile" element={<UserProfile />} />
       </Routes>

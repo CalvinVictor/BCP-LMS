@@ -3,7 +3,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
-const authenticate = require('./middleware/authMiddleware'); // ⬅️ Import middleware
+const adminRoutes = require('./routes/adminRoutes'); // ✅ NEW
+const authenticate = require('./middleware/authMiddleware');
+const connectDB = require("./config/db");
 
 const app = express();
 
@@ -13,14 +15,20 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', authenticate, adminRoutes); // ✅ Protected admin routes
 
-// ➕ Add your protected route here:
 app.get('/api/protected', authenticate, (req, res) => {
   res.json({
     message: `Hello ${req.user.role}, your token is valid.`,
     user: req.user,
   });
 });
+
+// Connect to MongoDB
+connectDB();
+
+// Routes
+app.use("/api/admin", adminRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)

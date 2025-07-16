@@ -11,7 +11,6 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Correct field name
     const user = await User.create({
       username,
       email,
