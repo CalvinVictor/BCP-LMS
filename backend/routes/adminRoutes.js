@@ -72,6 +72,44 @@ router.delete('/courses/:id', verifyAdmin, async (req, res) => {
   }
 });
 
+// 📥 Create new course (Admin only)
+router.post('/courses', verifyAdmin, async (req, res) => {
+  try {
+    const {
+      title,
+      instructor,
+      category,
+      status = "draft",
+      rating,
+      students = 0,
+      duration,
+      level
+    } = req.body;
+
+    if (!title || !instructor || !category || !duration || !level) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const newCourse = new Course({
+      title,
+      instructor,
+      category,
+      status,
+      rating,
+      students,
+      duration,
+      level,
+      createdAt: new Date(),
+    });
+
+    await newCourse.save();
+    res.status(201).json({ message: "Course created successfully", course: newCourse });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create course" });
+  }
+});
+
 // 🔁 Toggle course status
 router.put('/courses/:id/toggle', verifyAdmin, async (req, res) => {
   try {

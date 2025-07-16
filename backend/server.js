@@ -24,11 +24,7 @@ app.get('/api/protected', authenticate, (req, res) => {
   });
 });
 
-// Connect to MongoDB
-connectDB();
-
-// Routes
-app.use("/api/admin", adminRoutes);
+// Connect to Mo
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
