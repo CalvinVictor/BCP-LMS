@@ -41,6 +41,22 @@ router.get('/users', verifyAdmin, async (req, res) => {
   }
 });
 
+// 🧑‍🏫 GET /api/admin/instructors - Get all users with the instructor role
+router.get('/instructors', verifyAdmin, async (req, res) => {
+  try {
+    const instructors = await User.find({ role: 'instructor' }).sort({ createdAt: -1 });
+    res.json(instructors);
+  } catch (error) {
+    console.error('Error fetching instructors:', error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
+
+
+
 router.get("/courses", async (req, res) => {
   try {
     const courses = await Course.find();

@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as THREE from "three";
 import NET from "vanta/dist/vanta.net.min";
-import api from '../api/axiosConfig';
+// Change this line in AdminHome.jsx
+// The new, simpler import if you move the folder
+import api from '../services/axiosConfig';
 import { 
   Users, 
   BookOpen, 
@@ -31,6 +33,8 @@ import {
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
+  // Add this with your other useState hooks
+const [instructors, setInstructors] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
@@ -68,77 +72,63 @@ const AdminDashboard = () => {
     return () => effect.destroy();
   }, []);
 
-  // Initialize data
+  // Initialize data[]);
+// Vanta Background (This one is perfect, leave it as is)
+  useEffect(() => {
+    const effect = NET({
+      el: vantaRef.current,
+      THREE,
+      // ... your vanta settings
+    });
+    return () => effect.destroy();
+  }, []);
+
+  // --- REPLACE YOUR OLD DATA-FETCHING useEffect WITH THIS BLOCK ---
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
-        // Fetch users
-        const usersResponse = await axios.get("http://localhost:5000/api/admin/users");
-        console.log("Users data:", usersResponse.data); // Debug log
-        
-        setUsers(usersResponse.data);
-        setFilteredUsers(usersResponse.data);
-        
-        // Calculate stats
-        const totalUsers = usersResponse.data.length;
-        const totalInstructors = usersResponse.data.filter(u => u.role === "instructor").length;
-        const totalStudents = usersResponse.data.filter(u => u.role === "student").length;
-        
-        setStats({
-          totalUsers,
-          totalCourses: 0, // Update this when you fetch courses
-          totalInstructors,
-          totalStudents
-        });
+        // Use Promise.all to run all API calls in parallel for speed
+        const [statsRes, usersRes, coursesRes] = await Promise.all([
+          api.get('/admin/stats'),      // 1. Efficiently get all counts
+          api.get('/admin/users'),      // 2. Get the full user list
+          api.get('/admin/courses')     // 3. Get the full course list
+        ]);
 
-        // Fetch courses if you have an endpoint
-        try {
-          const coursesResponse = await axios.get("http://localhost:5000/api/admin/courses");
-          setCourses(coursesResponse.data);
-          setFilteredCourses(coursesResponse.data);
-          setStats(prev => ({
-            ...prev,
-            totalCourses: coursesResponse.data.length
-          }));
-        } catch (courseError) {
-          console.log("No courses endpoint available or error:", courseError);
-          // Set some dummy courses for now
-          const dummyCourses = [
-            {
-              _id: "1",
-              title: "Advanced JavaScript",
-              category: "Programming",
-              instructor: "Alice Brown",
-              students: 25,
-              status: "active"
-            },
-            {
-              _id: "2", 
-              title: "React Development",
-              category: "Web Development",
-              instructor: "John Smith",
-              students: 30,
-              status: "active"
-            }
-          ];
-          setCourses(dummyCourses);
-          setFilteredCourses(dummyCourses);
-          setStats(prev => ({
-            ...prev,
-            totalCourses: dummyCourses.length
-          }));
-        }
-        
+        // Set all your state from the responses
+        setStats(statsRes.data);
+        setUsers(usersRes.data);
+        setFilteredUsers(usersRes.data); // Initialize filtered list
+        setCourses(coursesRes.data);
+        setFilteredCourses(coursesRes.data); // Initialize filtered list
+
       } catch (error) {
         console.error("Error fetching data:", error);
-        showMessage("Error loading data", "error");
+        showMessage(error.response?.data?.error || "Error loading initial data", "error");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
-
+  }, []); // The empty array [] means this runs only once when the component mounts
   // Filter users
+// Find your main data-fetching useEffect and add this logic
+useEffect(() => {
+  // This fetches instructors only when the tab is opened and the list is empty
+  if (activeTab === 'instructors' && instructors.length === 0) {
+    const fetchInstructors = async () => {
+      try {
+        const { data } = await api.get('/admin/instructors');
+        setInstructors(data);
+      } catch (error) {
+        console.error("Failed to fetch instructors", error);
+        showMessage("Could not load instructors", "error");
+      }
+    };
+    fetchInstructors();
+  }
+}, [activeTab]); // This effect now runs whenever the activeTab changes
   useEffect(() => {
     let filtered = users;
     if (userFilter !== "all") {
