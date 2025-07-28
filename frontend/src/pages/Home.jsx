@@ -4,6 +4,8 @@ import Layout from "../Components/Layout";
 import WelcomeSection from "../Components/WelcomeSection";
 import CategoryFilter from "../Components/CategoryFilter";
 import CourseCard from "../Components/CourseCard";
+import AIChatWidget from "../Components/AIChatWidget";
+
 const courses = [
   {
     title: "React for Beginners",
@@ -125,6 +127,9 @@ function Home() {
           ))}
         </div>
       </section>
+
+      {/* AI Chat Widget */}
+      <AIChatWidget />
     </Layout>
   );
 }

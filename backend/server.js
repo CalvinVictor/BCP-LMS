@@ -6,7 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes'); // ✅ NEW
 const authenticate = require('./middleware/authMiddleware');
 const connectDB = require("./config/db");
-
+const courseRoutes = require('./routes/courseRoutes');
 const app = express();
 
 // Middleware
@@ -16,15 +16,13 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', authenticate, adminRoutes); // ✅ Protected admin routes
-
+app.use('/api/courses', courseRoutes);
 app.get('/api/protected', authenticate, (req, res) => {
   res.json({
     message: `Hello ${req.user.role}, your token is valid.`,
     user: req.user,
   });
 });
-
-// Connect to Mo
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)

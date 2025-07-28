@@ -11,6 +11,26 @@ const verifyAdmin = (req, res, next) => {
   next();
 };
 
+// 📊 Get dashboard stats
+router.get('/stats', verifyAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalCourses = await Course.countDocuments();
+    const instructors = await User.countDocuments({ role: 'instructor' });
+    const students = await User.countDocuments({ role: 'student' });
+
+    res.json({
+      totalUsers,
+      totalCourses,
+      instructors,
+      students,
+    });
+  } catch (error) {
+    console.error('Error fetching stats:', error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // 👥 Get all users
 router.get('/users', verifyAdmin, async (req, res) => {
   try {
@@ -52,15 +72,6 @@ router.put('/users/:id/toggle', verifyAdmin, async (req, res) => {
   }
 });
 
-// 📚 Get all courses
-router.get('/courses', verifyAdmin, async (req, res) => {
-  try {
-    const courses = await Course.find().sort({ createdAt: -1 });
-    res.json(courses);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch courses' });
-  }
-});
 
 // ❌ Delete course
 router.delete('/courses/:id', verifyAdmin, async (req, res) => {

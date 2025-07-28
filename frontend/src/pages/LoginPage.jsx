@@ -4,7 +4,7 @@ import axios from "axios";  // ✅ Keep this import here
 import * as THREE from "three";
 import NET from "vanta/dist/vanta.net.min";
 
-import RoleToggle from "../components/RoleToggle";
+import RoleToggle from "../Components/RoleToggle";
 import SocialLogin from "../components/SocialLogin";
 import Message from "../components/Message";
 import AuthForm from "../components/AuthForm";

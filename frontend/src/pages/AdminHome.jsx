@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as THREE from "three";
 import NET from "vanta/dist/vanta.net.min";
+import api from '../api/axiosConfig';
 import { 
   Users, 
   BookOpen, 
@@ -51,21 +52,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const vantaRef = useRef(null);
 
-  // Sample data - replace with actual API calls
-  const sampleUsers = [
-    { id: 1, username: "john_doe", email: "john@example.com", role: "student", status: "active", createdAt: "2024-01-15", lastLogin: "2024-07-10" },
-    { id: 2, username: "jane_smith", email: "jane@example.com", role: "instructor", status: "active", createdAt: "2024-01-20", lastLogin: "2024-07-12" },
-    { id: 3, username: "bob_wilson", email: "bob@example.com", role: "student", status: "inactive", createdAt: "2024-02-01", lastLogin: "2024-06-15" },
-    { id: 4, username: "alice_brown", email: "alice@example.com", role: "instructor", status: "active", createdAt: "2024-02-15", lastLogin: "2024-07-14" },
-  ];
-
-  const sampleCourses = [
-    { id: 1, title: "Introduction to React", instructor: "Jane Smith", students: 45, status: "active", createdAt: "2024-03-01", category: "Web Development" },
-    { id: 2, title: "Advanced JavaScript", instructor: "Alice Brown", students: 32, status: "active", createdAt: "2024-03-15", category: "Programming" },
-    { id: 3, title: "Database Design", instructor: "John Teacher", students: 28, status: "draft", createdAt: "2024-04-01", category: "Database" },
-    { id: 4, title: "Machine Learning Basics", instructor: "AI Expert", students: 67, status: "active", createdAt: "2024-04-15", category: "AI/ML" },
-  ];
-
   // Vanta Background
   useEffect(() => {
     const effect = NET({
@@ -84,24 +70,73 @@ const AdminDashboard = () => {
 
   // Initialize data
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/api/admin/users");
-      setUsers(response.data);
-      setFilteredUsers(response.data);
-      setStats({
-        totalUsers: response.data.length,
-        totalInstructors: response.data.filter(u => u.role === "instructor").length,
-        totalStudents: response.data.filter(u => u.role === "student").length
-      });
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  };
+    const fetchData = async () => {
+      try {
+        // Fetch users
+        const usersResponse = await axios.get("http://localhost:5000/api/admin/users");
+        console.log("Users data:", usersResponse.data); // Debug log
+        
+        setUsers(usersResponse.data);
+        setFilteredUsers(usersResponse.data);
+        
+        // Calculate stats
+        const totalUsers = usersResponse.data.length;
+        const totalInstructors = usersResponse.data.filter(u => u.role === "instructor").length;
+        const totalStudents = usersResponse.data.filter(u => u.role === "student").length;
+        
+        setStats({
+          totalUsers,
+          totalCourses: 0, // Update this when you fetch courses
+          totalInstructors,
+          totalStudents
+        });
 
-  fetchData();
-}, []);
+        // Fetch courses if you have an endpoint
+        try {
+          const coursesResponse = await axios.get("http://localhost:5000/api/admin/courses");
+          setCourses(coursesResponse.data);
+          setFilteredCourses(coursesResponse.data);
+          setStats(prev => ({
+            ...prev,
+            totalCourses: coursesResponse.data.length
+          }));
+        } catch (courseError) {
+          console.log("No courses endpoint available or error:", courseError);
+          // Set some dummy courses for now
+          const dummyCourses = [
+            {
+              _id: "1",
+              title: "Advanced JavaScript",
+              category: "Programming",
+              instructor: "Alice Brown",
+              students: 25,
+              status: "active"
+            },
+            {
+              _id: "2", 
+              title: "React Development",
+              category: "Web Development",
+              instructor: "John Smith",
+              students: 30,
+              status: "active"
+            }
+          ];
+          setCourses(dummyCourses);
+          setFilteredCourses(dummyCourses);
+          setStats(prev => ({
+            ...prev,
+            totalCourses: dummyCourses.length
+          }));
+        }
+        
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        showMessage("Error loading data", "error");
+      }
+    };
 
+    fetchData();
+  }, []);
 
   // Filter users
   useEffect(() => {
@@ -147,44 +182,40 @@ const AdminDashboard = () => {
     navigate("/");
   };
 
-  // Handle user actions
+  // Handle user actions - FIXED to use _id
   const handleUserAction = async (action, userId) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (action === "delete") {
-        setUsers(users.filter(user => user.id !== userId));
+      if (action === 'delete') {
+        await api.delete(`/admin/users/${userId}`);
+        setUsers(users.filter(user => user._id !== userId)); // Use _id
         showMessage("User deleted successfully", "success");
-      } else if (action === "toggle-status") {
-        setUsers(users.map(user => 
-          user.id === userId 
-            ? { ...user, status: user.status === "active" ? "inactive" : "active" }
-            : user
-        ));
+      } else if (action === 'toggle-status') {
+        const res = await api.put(`/admin/users/${userId}/toggle`);
+        setUsers(users.map(user => (user._id === userId ? res.data.user : user))); // Use _id
         showMessage("User status updated", "success");
       }
     } catch (error) {
-      showMessage("Action failed", "error");
+      showMessage(error.response?.data?.error || "Action failed", "error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle course actions
+  // Handle course actions - FIXED to use _id
   const handleCourseAction = async (action, courseId) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       if (action === "delete") {
-        setCourses(courses.filter(course => course.id !== courseId));
+        // If you have a courses API endpoint
+        // await api.delete(`/admin/courses/${courseId}`);
+        setCourses(courses.filter(course => course._id !== courseId)); // Use _id
         showMessage("Course deleted successfully", "success");
       } else if (action === "toggle-status") {
+        // If you have a courses API endpoint
+        // const res = await api.put(`/admin/courses/${courseId}/toggle`);
         setCourses(courses.map(course => 
-          course.id === courseId 
+          course._id === courseId  // Use _id
             ? { ...course, status: course.status === "active" ? "draft" : "active" }
             : course
         ));
@@ -321,8 +352,8 @@ const AdminDashboard = () => {
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3 p-3 bg-white bg-opacity-5 rounded-lg">
                       <UserCheck className="text-green-400" size={20} />
-                      <span className="text-gray-300">New user registered: john_doe</span>
-                      <span className="text-gray-500 text-sm ml-auto">2 hours ago</span>
+                      <span className="text-gray-300">New user registered: {users.length > 0 ? users[users.length - 1].username : 'N/A'}</span>
+                      <span className="text-gray-500 text-sm ml-auto">Recently</span>
                     </div>
                     <div className="flex items-center space-x-3 p-3 bg-white bg-opacity-5 rounded-lg">
                       <Book className="text-blue-400" size={20} />
@@ -339,7 +370,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Users Tab */}
+            {/* Users Tab - FIXED to use _id */}
             {activeTab === "users" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -369,13 +400,13 @@ const AdminDashboard = () => {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">User</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Role</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Last Login</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white divide-opacity-10">
                         {filteredUsers.map((user) => (
-                          <tr key={user.id} className="hover:bg-white hover:bg-opacity-5">
+                          <tr key={user._id} className="hover:bg-white hover:bg-opacity-5">
                             <td className="px-6 py-4">
                               <div>
                                 <div className="text-sm font-medium text-white">{user.username}</div>
@@ -386,6 +417,8 @@ const AdminDashboard = () => {
                               <span className={`px-2 py-1 text-xs rounded-full ${
                                 user.role === "instructor" 
                                   ? "bg-purple-500 bg-opacity-20 text-purple-300"
+                                  : user.role === "admin"
+                                  ? "bg-red-500 bg-opacity-20 text-red-300"
                                   : "bg-blue-500 bg-opacity-20 text-blue-300"
                               }`}>
                                 {user.role}
@@ -400,7 +433,9 @@ const AdminDashboard = () => {
                                 {user.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-400">{user.lastLogin}</td>
+                            <td className="px-6 py-4 text-sm text-gray-400">
+                              {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                            </td>
                             <td className="px-6 py-4">
                               <div className="flex items-center space-x-2">
                                 <button className="p-1 text-gray-400 hover:text-white transition-colors">
@@ -410,14 +445,16 @@ const AdminDashboard = () => {
                                   <Edit size={16} />
                                 </button>
                                 <button 
-                                  onClick={() => handleUserAction("toggle-status", user.id)}
+                                  onClick={() => handleUserAction("toggle-status", user._id)}
                                   className="p-1 text-gray-400 hover:text-white transition-colors"
+                                  disabled={isLoading}
                                 >
                                   {user.status === "active" ? <UserX size={16} /> : <UserCheck size={16} />}
                                 </button>
                                 <button 
-                                  onClick={() => handleUserAction("delete", user.id)}
+                                  onClick={() => handleUserAction("delete", user._id)}
                                   className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                                  disabled={isLoading}
                                 >
                                   <Trash2 size={16} />
                                 </button>
@@ -432,7 +469,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Courses Tab */}
+            {/* Courses Tab - FIXED to use _id */}
             {activeTab === "courses" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -468,7 +505,7 @@ const AdminDashboard = () => {
                       </thead>
                       <tbody className="divide-y divide-white divide-opacity-10">
                         {filteredCourses.map((course) => (
-                          <tr key={course.id} className="hover:bg-white hover:bg-opacity-5">
+                          <tr key={course._id} className="hover:bg-white hover:bg-opacity-5">
                             <td className="px-6 py-4">
                               <div>
                                 <div className="text-sm font-medium text-white">{course.title}</div>
@@ -495,14 +532,16 @@ const AdminDashboard = () => {
                                   <Edit size={16} />
                                 </button>
                                 <button 
-                                  onClick={() => handleCourseAction("toggle-status", course.id)}
+                                  onClick={() => handleCourseAction("toggle-status", course._id)}
                                   className="p-1 text-gray-400 hover:text-white transition-colors"
+                                  disabled={isLoading}
                                 >
                                   {course.status === "active" ? <UserX size={16} /> : <UserCheck size={16} />}
                                 </button>
                                 <button 
-                                  onClick={() => handleCourseAction("delete", course.id)}
+                                  onClick={() => handleCourseAction("delete", course._id)}
                                   className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                                  disabled={isLoading}
                                 >
                                   <Trash2 size={16} />
                                 </button>
@@ -517,7 +556,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Instructors Tab */}
+            {/* Instructors Tab - FIXED to use _id */}
             {activeTab === "instructors" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -530,7 +569,7 @@ const AdminDashboard = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredUsers.filter(user => user.role === "instructor").map((instructor) => (
-                    <div key={instructor.id} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-6 border border-white border-opacity-20">
+                    <div key={instructor._id} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-6 border border-white border-opacity-20">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-white">{instructor.username}</h3>
                         <span className={`px-2 py-1 text-xs rounded-full ${
@@ -559,7 +598,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
             )}
-
             {/* Settings Tab */}
             {activeTab === "settings" && (
               <div className="space-y-6">
