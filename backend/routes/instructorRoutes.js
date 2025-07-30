@@ -1,40 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const Course = require('../models/course');
-const User = require('../models/user');
-// You'll need a middleware to verify the user is an instructor
 const { verifyToken, verifyInstructor } = require('../middleware/authMiddleware');
+const courseController = require('../controllers/courseController');
 
-// GET /api/instructor/courses
-// Fetches courses created by the logged-in instructor
-router.get('/courses', verifyToken, verifyInstructor, async (req, res) => {
-  try {
-    // Assumes your Course model has a field to store the instructor's ID
-    const courses = await Course.find({ instructorId: req.user.id }).sort({ createdAt: -1 });
-    res.json(courses);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching courses" });
-  }
-});
+// @route   POST /api/instructor/create-course
+// @desc    Instructor creates a new course
+router.post('/create-course', verifyToken, verifyInstructor, courseController.createCourse);
 
-// GET /api/instructor/stats
-// Fetches dashboard stats for the logged-in instructor
+// @route   GET /api/instructor/my-courses
+// @desc    Get all courses created by this instructor
+router.get('/my-courses', verifyToken, verifyInstructor, courseController.getMyCourses);
+
+// @route   GET /api/instructor/stats
+// @desc    Get instructor dashboard statistics
 router.get('/stats', verifyToken, verifyInstructor, async (req, res) => {
   try {
-    const courses = await Course.find({ instructorId: req.user.id });
-    
-    const totalStudents = courses.reduce((sum, course) => sum + course.students, 0);
-    const averageRating = courses.length > 0 
-      ? (courses.reduce((sum, course) => sum + course.rating, 0) / courses.length).toFixed(1)
+    const Course = require('../models/course');
+    const courses = await Course.find({ instructor: req.user.id });
+
+    const totalStudents = courses.reduce((sum, c) => sum + c.students, 0);
+    const avgRating = courses.length > 0
+      ? (courses.reduce((sum, c) => sum + c.rating, 0) / courses.length).toFixed(1)
       : 0;
 
     res.json({
       totalStudents,
-      averageRating,
-      monthlyEarnings: 12450 // Placeholder, real earnings logic would be more complex
+      averageRating: avgRating,
+      monthlyEarnings: 12450 // Hardcoded for now
     });
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching stats" });
+  } catch (error) {
+    console.error("Error in /stats route:", error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
 

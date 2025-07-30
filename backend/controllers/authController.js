@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-// Register Controller
+// ✅ Register Controller
 exports.register = async (req, res) => {
   const { username, email, password, role } = req.body;
   try {
@@ -18,8 +18,9 @@ exports.register = async (req, res) => {
       role,
     });
 
+    // ✅ Use `id` in the payload instead of `userId`
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -34,7 +35,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login Controller
+// ✅ Login Controller
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -44,8 +45,9 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
+    // ✅ Same fix here: use `id` instead of `userId`
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );

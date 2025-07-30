@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-// 1. Renamed 'authenticate' to 'verifyToken' for clarity
+// Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -12,25 +12,33 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Adds user payload ({ id, role }) to the request
+
+    // ✅ Handles both "userId" and "id" fields in token
+    req.user = {
+      id: decoded.userId || decoded.id,
+      role: decoded.role
+    };
+
+    if (!req.user.id) {
+      return res.status(401).json({ error: 'Invalid token: user id missing.' });
+    }
+
     next();
   } catch (err) {
+    console.error('JWT verification failed:', err.message);
     return res.status(401).json({ error: 'Invalid or expired token.' });
   }
 };
 
-// 2. Added the missing 'verifyInstructor' middleware
+// Middleware to verify instructor role
 const verifyInstructor = (req, res, next) => {
-  // This middleware must run *after* verifyToken
-  if (req.user && req.user.role === 'instructor') {
-    next();
-  } else {
-    return res.status(403).json({ error: 'Access denied. Instructor role required.' });
+  if (req.user?.role === 'instructor') {
+    return next();
   }
+  return res.status(403).json({ error: 'Access denied. Instructor role required.' });
 };
 
-// 3. Exported both functions in an object
 module.exports = {
   verifyToken,
-  verifyInstructor,
+  verifyInstructor
 };
