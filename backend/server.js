@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const instructorRoutes = require('./routes/instructorRoutes');
 const enrollmentRoutes = require('./routes/enrollmentRoutes');
+const learningRoutes = require('./routes/learningRoutes');
 // --- Middleware Import (Corrected) ---
 // Import the specific verifyToken function using destructuring
 const { verifyToken } = require('./middleware/authMiddleware');
@@ -24,6 +25,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/instructor', instructorRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
+app.use('/api/learning', learningRoutes);
 // Use the 'verifyToken' function to protect all admin routes
 app.use('/api/admin', verifyToken, adminRoutes);
 

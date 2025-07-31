@@ -1,15 +1,12 @@
 // src/services/apiService.js
 import axios from "axios";
 
-// ✅ Base URL for backend
 const API_BASE_URL = "http://localhost:5000/api";
 
-// ✅ Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// ✅ Automatically attach token to all requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -21,61 +18,92 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ Global error handler for failed responses
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error("API Error:", error.response?.data || error.message);
     return Promise.reject(
-      error.response?.data?.error || "Something went wrong. Please try again."
+      error.response?.data?.message || "Something went wrong. Please try again."
     );
   }
 );
 
 export default {
-  // ✅ Fetch all courses created by this instructor
+  // --- Auth Routes ---
+  login: async (credentials) => {
+    const { data } = await api.post("/auth/login", credentials);
+    return data;
+  },
+  register: async (formData) => {
+    const { data } = await api.post("/auth/register", formData);
+    return data;
+  },
+
+  // --- Instructor Routes ---
   fetchInstructorCourses: async () => {
     const { data } = await api.get("/instructor/my-courses");
     return data;
   },
-
-  // ✅ Create a new course
   createCourse: async (courseData) => {
-    const { data } = await api.post("/instructor/create-course", courseData);
+    const { data } = await api.post("/courses", courseData);
     return data;
   },
-
-  // ✅ Get instructor dashboard stats
   fetchInstructorStats: async () => {
     const { data } = await api.get("/instructor/stats");
     return data;
   },
   addChapter: async (courseId, chapterData) => {
-  const { data } = await api.post(`/courses/${courseId}/add-chapter`, chapterData);
-  return data;
-},
-
-
-  // ✅ Publish a course
+    const { data } = await api.post(`/courses/${courseId}/chapters`, chapterData);
+    return data;
+  },
   publishCourse: async (courseId) => {
     const { data } = await api.put(`/courses/${courseId}/publish`);
     return data;
   },
 
+  // --- Public/Student Routes ---
   fetchPublishedCourses: async () => {
-  const response = await api.get("/courses"); // uses GET /api/courses
-  return response.data;
+    const { data } = await api.get("/courses");
+    return data;
+  },
+  
+  // ✅ THIS IS THE MISSING FUNCTION THAT FIXES THE BUG
+  getCourseById: async (courseId) => {
+    const { data } = await api.get(`/courses/${courseId}`);
+    return data;
+  },
+// --- Enrollment Routes ---
+enrollInCourse: async (courseId) => {
+  const { data } = await api.post('/enrollments/enroll', { courseId });
+  return data;
 },
 
-  // ✅ Login
-  login: async (credentials) => {
-    const { data } = await api.post("/auth/login", credentials);
-    return data;
-  },
+getMyEnrolledCourses: async () => {
+  const { data } = await api.get('/enrollments/my-courses');
+  return data;
+},
 
-  // ✅ Register
-  register: async (formData) => {
-    const { data } = await api.post("/auth/register", formData);
-    return data;
-  },
+getEnrollmentStatus: async (courseId) => {
+  const { data } = await api.get(`/enrollments/status/${courseId}`);
+  return data;
+},
+
+// --- Learning Routes ---
+getCourseForLearning: async (courseId) => {
+  const { data } = await api.get(`/learning/course/${courseId}`);
+  return data;
+},
+
+markChapterAsComplete: async (courseId, chapterId) => {
+  const { data } = await api.post('/learning/progress/complete-chapter', { courseId, chapterId });
+  return data;
+},
+
+// --- Learning Routes ---
+markCourseAsComplete: async (courseId) => {
+  const { data } = await api.post('/learning/progress/complete-course', { courseId });
+  return data;
+},
+
+
 };

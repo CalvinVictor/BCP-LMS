@@ -19,8 +19,10 @@ const enrollmentSchema = new mongoose.Schema({
     type: Number,
     default: 0, // Progress as a percentage from 0 to 100
   },
+    completedChapters: [{
+    type: mongoose.Schema.Types.ObjectId, // Store IDs of completed chapters
+  }],
 });
-
 // This is a compound index. It ensures that the same student cannot enroll
 // in the same course more than once, preventing duplicate data.
 enrollmentSchema.index({ course: 1, student: 1 }, { unique: true });

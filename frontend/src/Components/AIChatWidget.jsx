@@ -25,7 +25,7 @@ const AIChatWidget = () => {
   }, [isOpen]);
 
   // Gemini Pro API Configuration
-  const GEMINI_API_KEY = 'AIzaSyD1zpJe8MPRGQRJeMxj5qOT4M3x5GzCJMI';
+  const GEMINI_API_KEY = '';
   
   const callGeminiAPI = async (message) => {
     try {

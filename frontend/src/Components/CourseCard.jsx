@@ -1,15 +1,12 @@
 import React from "react";
-import { Link } from "react-router-dom"; // Step 1: Import the Link component
+import { Link } from "react-router-dom";
 import { Play, Star, Clock } from "lucide-react";
 
-// The props are slightly simplified as we don't need hover state from the parent anymore
 const CourseCard = ({ course, type = "progress" }) => {
   
   // The 'featured' card type
   if (type === "featured") {
     return (
-      // Step 2: Wrap the main div in a Link component.
-      // The 'to' prop creates the URL, e.g., "/course/60c72b2f9b1e8a5a4c8d9c4a"
       <Link to={`/course/${course._id}`}>
         <div className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 transform hover:scale-105 cursor-pointer">
           <div className="flex">
@@ -20,7 +17,8 @@ const CourseCard = ({ course, type = "progress" }) => {
             />
             <div className="p-6 flex-1">
               <h4 className="text-lg font-semibold text-white mb-2">{course.title}</h4>
-              <p className="text-gray-300 text-sm mb-2">By {course.instructor}</p>
+              {/* ✅ CORRECTED LINE */}
+              <p className="text-gray-300 text-sm mb-2">By {course.instructor?.username}</p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1">
                   <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -28,7 +26,6 @@ const CourseCard = ({ course, type = "progress" }) => {
                 </div>
                 <span className="text-blue-400 font-semibold">${course.price}</span>
               </div>
-              {/* This button can still exist for style, but the whole card is now the link */}
               <div className="mt-3 bg-gradient-to-r from-green-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm text-center">
                 View Details
               </div>
@@ -41,7 +38,6 @@ const CourseCard = ({ course, type = "progress" }) => {
 
   // The default 'progress' card type
   return (
-    // Step 2: Wrap the main div in a Link component here as well.
     <Link to={`/course/${course._id}`}>
       <div
         className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 transform hover:scale-105 cursor-pointer hover:shadow-2xl hover:shadow-blue-500/20"
@@ -71,7 +67,8 @@ const CourseCard = ({ course, type = "progress" }) => {
         
         <div className="p-6">
           <h3 className="text-xl font-semibold text-white mb-2">{course.title}</h3>
-          <p className="text-gray-300 mb-3">By {course.instructor}</p>
+           {/* ✅ CORRECTED LINE */}
+          <p className="text-gray-300 mb-3">By {course.instructor?.username}</p>
           
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-1">

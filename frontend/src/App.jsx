@@ -6,6 +6,7 @@ import About from "./pages/about";
 import UserProfile from "./pages/UserProfile";
 import AdminHome from "./pages/AdminHome";
 import CourseDetailPage from './pages/CourseDetailPage';
+import CoursePlayerPage from './pages/CoursePlayerPage';
  // 🆕 import this if you haven't
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/course/:courseId" element={<CourseDetailPage />} />
+        <Route path="/course-player/:courseId" element={<CoursePlayerPage />} />
       </Routes>
     </Router>
   );
