@@ -48,7 +48,9 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
               <span>Profile</span>
             </button>
             
-            <button className="flex items-center space-x-2 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200">
+            <button 
+              
+              className="flex items-center space-x-2 bg-white/10 backdrop-blur-md text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-200">
               <BookOpen className="w-4 h-4" />
               <span>My Courses</span>
             </button>

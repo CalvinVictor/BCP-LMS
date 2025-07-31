@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import InstructorDashboard from "./pages/Instructorhome"; // already imported
 import About from "./pages/about";
 import UserProfile from "./pages/UserProfile";
+import QuizPage from './pages/QuizPage';
 import AdminHome from "./pages/AdminHome";
 import CourseDetailPage from './pages/CourseDetailPage';
 import CoursePlayerPage from './pages/CoursePlayerPage';
@@ -19,6 +20,7 @@ function App() {
         <Route path="/adminhome" element={<AdminHome />} />
         <Route path="/about" element={<About />} />
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/test/:courseId" element={<QuizPage />} />
         <Route path="/course/:courseId" element={<CourseDetailPage />} />
         <Route path="/course-player/:courseId" element={<CoursePlayerPage />} />
       </Routes>

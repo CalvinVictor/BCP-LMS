@@ -104,6 +104,10 @@ markCourseAsComplete: async (courseId) => {
   const { data } = await api.post('/learning/progress/complete-course', { courseId });
   return data;
 },
-
+//--- quiz page da---
+getQuizForCourse: async (courseId) => {
+    const { data } = await api.get(`/courses/${courseId}/quiz`);
+    return data;
+  },
 
 };

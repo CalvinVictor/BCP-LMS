@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import ReactPlayer from 'react-player'; 
 import apiService from '../services/apiService';
 import Layout from '../Components/Layout';
@@ -74,6 +74,7 @@ const CertificateModal = ({ courseTitle, studentName, onClose }) => (
 
 // --- Main Course Player Page Component ---
 const CoursePlayerPage = () => {
+    const navigate = useNavigate();
     const { courseId } = useParams();
     const [course, setCourse] = useState(null);
     const [enrollment, setEnrollment] = useState(null);
@@ -149,7 +150,7 @@ const CoursePlayerPage = () => {
                         
                         {/* ✅ QUIZ BUTTON IS NOW ALWAYS ENABLED */}
                         <button 
-                            onClick={() => setShowQuizModal(true)}
+                            onClick={() => navigate(`/test/${courseId}`)}
                             className="bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold flex items-center gap-2 transition-all duration-300 hover:bg-purple-700"
                         >
                             <HelpCircle/>

@@ -84,4 +84,47 @@ router.post('/:courseId/chapters', [verifyToken, verifyInstructor], async (req, 
   }
 });
 
+// in backend/routes/courseRoutes.js
+
+// ✅ REPLACE THE OLD /:courseId/quiz ROUTE WITH THIS NEW VERSION
+
+// @route   GET /api/courses/:courseId/quiz
+// @desc    Get all MCQs for a course to build a quiz
+router.get('/:courseId/quiz', async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.courseId);
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+
+    let allQuestions = [];
+    course.chapters.forEach(chapter => {
+      if (chapter.mcqs && chapter.mcqs.length > 0) {
+        
+        // This .map() function reformats the data to match the frontend
+        const formattedMcqs = chapter.mcqs.map(mcq => ({
+          questionText: mcq.question, // from 'question' to 'questionText'
+          options: mcq.options,
+          correctAnswer: mcq.correctAnswer,
+        }));
+        
+        allQuestions = allQuestions.concat(formattedMcqs);
+      }
+    });
+
+    if (allQuestions.length === 0) {
+      return res.status(404).json({ message: 'No quiz questions found.' });
+    }
+
+    res.json({
+      title: `Evaluation for ${course.title}`,
+      questions: allQuestions,
+    });
+
+  } catch (error) {
+    console.error('Error fetching quiz data:', error);
+    res.status(500).json({ message: 'Server error while fetching quiz' });
+  }
+});
+
 module.exports = router;
