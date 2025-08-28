@@ -104,24 +104,31 @@ function InstructorDashboard() {
     setShowAddChapterModal(true);
   };
 
-  const handleAddChapter = async () => {
-    try {
-      await apiService.addChapter(selectedCourseId, newChapter);
-      await fetchCourses();
-      alert("✅ Chapter added successfully!");
-
-      setShowAddChapterModal(false);
-      setNewChapter({
-        title: "",
-        description: "",
-        videoURL: "",
-        materials: [""],
-        mcqs: [{ question: "", options: ["", "", "", ""], correctAnswer: "" }],
-      });
-    } catch (err) {
-      alert("❌ Failed to add chapter.");
+const handleAddChapter = async () => {
+  try {
+    const formData = new FormData();
+    formData.append("title", newChapter.title);
+    formData.append("description", newChapter.description);
+    if (newChapter.videoFile) {
+      formData.append("video", newChapter.videoFile);
     }
-  };
+
+    await apiService.addChapter(selectedCourseId, formData);
+    await fetchCourses();
+    alert("✅ Chapter added successfully!");
+
+    setShowAddChapterModal(false);
+    setNewChapter({
+      title: "",
+      description: "",
+      videoFile: null,
+      materials: [""],
+      mcqs: [{ question: "", options: ["", "", "", ""], correctAnswer: "" }],
+    });
+  } catch (err) {
+    alert("❌ Failed to add chapter.");
+  }
+};
 
   const handleMCQChange = (index, field, value) => {
     const updatedMCQs = [...newChapter.mcqs];
@@ -328,15 +335,15 @@ function InstructorDashboard() {
               }
               className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
             ></textarea>
-            <input
-              type="text"
-              placeholder="Video URL"
-              value={newChapter.videoURL}
-              onChange={(e) =>
-                setNewChapter({ ...newChapter, videoURL: e.target.value })
-              }
-              className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
-            />
+           <input
+  type="file"
+  accept="video/*"
+  onChange={(e) =>
+    setNewChapter({ ...newChapter, videoFile: e.target.files[0] })
+  }
+  className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
+/>
+
 
             {/* MCQ Section */}
             <h4 className="text-lg font-semibold text-white mt-4">Add MCQs</h4>
