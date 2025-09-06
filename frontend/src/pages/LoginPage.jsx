@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";  // ✅ Keep this import here
 import * as THREE from "three";
 import NET from "vanta/dist/vanta.net.min";
-
+import Message from "../components/Message";
 import RoleToggle from "../Components/RoleToggle";
 import SocialLogin from "../components/SocialLogin";
-import Message from "../components/Message";
+
 import AuthForm from "../components/AuthForm";
 
 const LoginPage = () => {
@@ -94,6 +94,8 @@ const handleSubmit = async (e) => {
 
     const { data } = await axios.post(url, payload);
 
+     console.log("LOGIN RESPONSE FROM BACKEND:", data);
+
     // Role check during login
     if (isLogin && data.user.role !== role) {
       showMessage(`You are registered as ${data.user.role}. Please switch role to login.`, "error");
@@ -106,6 +108,7 @@ const handleSubmit = async (e) => {
     localStorage.setItem("token", data.token);
     localStorage.setItem("role", data.user.role);
     localStorage.setItem("username", data.user.username);
+    localStorage.setItem("userId", data.user._id);
 
     setTimeout(() => {
           if (data.user.role === "instructor") {

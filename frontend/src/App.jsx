@@ -8,6 +8,7 @@ import QuizPage from './pages/QuizPage';
 import AdminHome from "./pages/AdminHome";
 import CourseDetailPage from './pages/CourseDetailPage';
 import CoursePlayerPage from './pages/CoursePlayerPage';
+import LeaderboardPage from './pages/LeaderboardPage';
  // 🆕 import this if you haven't
 
 function App() {
@@ -23,6 +24,8 @@ function App() {
         <Route path="/test/:courseId" element={<QuizPage />} />
         <Route path="/course/:courseId" element={<CourseDetailPage />} />
         <Route path="/course-player/:courseId" element={<CoursePlayerPage />} />
+        <Route path="/leaderboard/:courseId" element={<LeaderboardPage />} />
+        <Route path="/quiz/:courseId" element={<QuizPage />} />
       </Routes>
     </Router>
   );

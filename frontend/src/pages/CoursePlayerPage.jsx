@@ -5,7 +5,10 @@ import apiService from '../services/apiService';
 import Layout from '../Components/Layout';
 import { Film, CheckCircle, Award, X, HelpCircle } from 'lucide-react';
 
-// --- (QuizModal and CertificateModal components remain the same) ---
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const VIDEO_BASE_URL = import.meta.env.VITE_VIDEO_URL || "http://localhost:5000";
+
+// --- QuizModal Component ---
 const QuizModal = ({ chapter, onClose, onQuizComplete }) => {
     const [answers, setAnswers] = useState({});
     const [score, setScore] = useState(null);
@@ -54,6 +57,8 @@ const QuizModal = ({ chapter, onClose, onQuizComplete }) => {
         </div>
     );
 };
+
+// --- CertificateModal Component ---
 const CertificateModal = ({ courseTitle, studentName, onClose }) => (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
         <div className="bg-white text-gray-800 p-10 rounded-lg w-full max-w-3xl text-center relative border-4 border-yellow-400">
@@ -71,6 +76,71 @@ const CertificateModal = ({ courseTitle, studentName, onClose }) => (
     </div>
 );
 
+// --- Video Player Component ---
+const VideoPlayer = ({ currentChapter }) => {
+    if (!currentChapter || !currentChapter.videoURL) {
+        return (
+            <div className="flex items-center justify-center h-full text-gray-400">
+                No video available for this chapter
+            </div>
+        );
+    }
+
+    const getVideoURL = (videoURL) => {
+        // Check if it's an external URL (YouTube, etc.)
+        const isExternalURL = videoURL.includes('youtube.com') || 
+                             videoURL.includes('youtu.be') ||
+                             videoURL.startsWith('https://') ||
+                             videoURL.startsWith('http://');
+        
+        if (isExternalURL) {
+            return videoURL;
+        }
+        
+        // For local files, handle the path correctly
+        const cleanVideoURL = videoURL.startsWith('/') ? videoURL.substring(1) : videoURL;
+        return `${VIDEO_BASE_URL}/${cleanVideoURL}`;
+    };
+
+    const videoURL = getVideoURL(currentChapter.videoURL);
+    const isYouTube = videoURL.includes('youtube.com') || videoURL.includes('youtu.be');
+
+    console.log('Video URL:', videoURL);
+    console.log('Is YouTube:', isYouTube);
+
+    if (isYouTube) {
+        // Use ReactPlayer for YouTube videos
+        return (
+            <ReactPlayer
+                url={videoURL}
+                width="100%"
+                height="100%"
+                controls={true}
+                onError={(error) => console.error('ReactPlayer Error:', error)}
+                onReady={() => console.log('ReactPlayer ready')}
+            />
+        );
+    } else {
+        // Use HTML5 video for local files
+        return (
+            <video 
+                width="100%" 
+                height="100%" 
+                controls
+                src={videoURL}
+                onError={(e) => {
+                    console.error('Video error:', e);
+                    console.error('Failed to load video from:', videoURL);
+                }}
+                onLoadStart={() => console.log('Video loading started')}
+                onCanPlay={() => console.log('Video can play')}
+                style={{ objectFit: 'contain' }}
+            >
+                Your browser does not support the video tag.
+            </video>
+        );
+    }
+};
 
 // --- Main Course Player Page Component ---
 const CoursePlayerPage = () => {
@@ -101,19 +171,17 @@ const CoursePlayerPage = () => {
     }, [courseId]);
 
     const handleQuizComplete = async (passed) => {
-        setShowQuizModal(false); // Close the quiz modal immediately
+        setShowQuizModal(false);
         if (passed) {
-            // Mark the chapter as complete
             const currentChapter = course.chapters[currentChapterIndex];
             try {
                 const { enrollment: updatedEnrollment } = await apiService.markChapterAsComplete(courseId, currentChapter._id);
                 setEnrollment(updatedEnrollment);
 
-                // Check if this was the final chapter
                 if (currentChapterIndex === course.chapters.length - 1) {
                     await apiService.markCourseAsComplete(courseId);
-                    setEnrollment(prev => ({ ...prev, progress: 100 })); // Update UI immediately
-                    setShowCertificate(true); // Generate certificate
+                    setEnrollment(prev => ({ ...prev, progress: 100 }));
+                    setShowCertificate(true);
                 }
             } catch (err) {
                 console.error("Failed to update progress:", err);
@@ -138,17 +206,12 @@ const CoursePlayerPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <div className="lg:col-span-3">
                         <div className="aspect-video bg-black rounded-xl mb-6 overflow-hidden">
-                            <ReactPlayer
-                                url={currentChapter.videoURL}
-                                width="100%"
-                                height="100%"
-                                controls
-                            />
+                            <VideoPlayer currentChapter={currentChapter} />
                         </div>
+
                         <h1 className="text-3xl font-bold mb-2">{currentChapter.title}</h1>
                         <p className="text-gray-400 mb-6">{currentChapter.description}</p>
                         
-                        {/* ✅ QUIZ BUTTON IS NOW ALWAYS ENABLED */}
                         <button 
                             onClick={() => navigate(`/test/${courseId}`)}
                             className="bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold flex items-center gap-2 transition-all duration-300 hover:bg-purple-700"

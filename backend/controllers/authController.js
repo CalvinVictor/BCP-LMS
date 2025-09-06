@@ -53,7 +53,7 @@ exports.login = async (req, res) => {
     );
 
     res.json({
-      user: { username: user.username, email: user.email, role: user.role },
+      user: { _id: user._id, username: user.username, email: user.email, role: user.role },
       token,
     });
   } catch (err) {

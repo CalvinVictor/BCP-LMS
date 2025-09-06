@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Clock, Award, ChevronRight } from "lucide-react";
 import Layout from "../Components/Layout";
 import WelcomeSection from "../Components/WelcomeSection";
-import CategoryFilter from "../Components/CategoryFilter";
 import CourseCard from "../Components/CourseCard";
-import AIChatWidget from "../Components/AIChatWidget";
+import CategoryFilter from "../Components/CategoryFilter";
 import apiService from "../services/apiService"; // ✅ Import API service
+import AIChatWidget from "../Components/AIChatWidget";
 
 function Home() {
   const [hoveredCourse, setHoveredCourse] = useState(null);

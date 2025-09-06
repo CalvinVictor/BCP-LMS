@@ -1,7 +1,8 @@
 // src/services/apiService.js
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -52,10 +53,18 @@ export default {
     const { data } = await api.get("/instructor/stats");
     return data;
   },
-  addChapter: async (courseId, chapterData) => {
-    const { data } = await api.post(`/courses/${courseId}/chapters`, chapterData);
-    return data;
-  },
+addChapter: async (courseId, formData) => {
+  const res = await fetch(`${API_BASE_URL}/instructor/${courseId}/add-chapter`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: formData, // ✅ don't stringify
+  });
+  if (!res.ok) throw new Error("Failed to add chapter");
+  return await res.json();
+},
+
   publishCourse: async (courseId) => {
     const { data } = await api.put(`/courses/${courseId}/publish`);
     return data;
@@ -109,5 +118,21 @@ getQuizForCourse: async (courseId) => {
     const { data } = await api.get(`/courses/${courseId}/quiz`);
     return data;
   },
+
+   submitTestResult: async (courseId, resultData) => {
+  // 'resultData' is the object { score: 1200, timeTaken: 7 }
+  // We pass it directly to the backend.
+  const { data } = await api.post(`/leaderboard/submit/${courseId}`, resultData);
+  return data;
+},
+  
+ getLeaderboard: async (courseId) => {
+    const { data } = await api.get(`/leaderboard/${courseId}`);
+    return data;
+ }  
+
+
+
+  
 
 };
