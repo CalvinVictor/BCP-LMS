@@ -70,6 +70,20 @@ addChapter: async (courseId, formData) => {
     return data;
   },
 
+  // --- User Profile Routes ---
+  getUserProfile: async () => {
+    const { data } = await api.get('/users/profile');
+    return data;
+  },
+  updateUserProfile: async (profileData) => {
+    const { data } = await api.put('/users/profile', profileData);
+    return data;
+  },
+  getMyCompletedCourses: async () => {
+    const { data } = await api.get('/users/my-completed-courses');
+    return data;
+  },
+
   // --- Public/Student Routes ---
   fetchPublishedCourses: async () => {
     const { data } = await api.get("/courses");
