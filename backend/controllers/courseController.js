@@ -118,9 +118,21 @@ exports.addChapterWithVideo = async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
 
+    // ✅ Check for duplicate chapter title within THIS course
+    const duplicate = course.chapters.find(
+      (ch) => ch.title.trim().toLowerCase() === title.trim().toLowerCase()
+    );
+
+    if (duplicate) {
+      return res.status(400).json({
+        error: `A chapter titled "${title}" already exists in this course.`,
+      });
+    }
+
     // ✅ Store only relative path (browser can access via express.static)
     const publicRelativePath = `/uploads/videos/${req.file.filename}`;
 
+    // Add new chapter
     course.chapters.push({
       title: title || `Chapter ${course.chapters.length + 1}`,
       description,
@@ -142,3 +154,27 @@ exports.addChapterWithVideo = async (req, res) => {
     res.status(500).json({ error: "Failed to add chapter with video" });
   }
 };
+// ✅ Delete a chapter from a course
+exports.deleteChapter = async (req, res) => {
+  try {
+    const { courseId, chapterId } = req.params;
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ error: "Course not found" });
+    }
+
+    course.chapters = course.chapters.filter(
+      (chapter) => chapter._id.toString() !== chapterId
+    );
+
+    course.totalVideos = course.chapters.length;
+    await course.save();
+
+    res.json({ message: "Chapter deleted successfully", course });
+  } catch (err) {
+    console.error("Error deleting chapter:", err.message);
+    res.status(500).json({ error: "Failed to delete chapter" });
+  }
+};
+

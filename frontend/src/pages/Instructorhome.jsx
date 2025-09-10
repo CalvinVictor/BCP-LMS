@@ -64,6 +64,21 @@ function InstructorDashboard() {
       (selectedCategory === "All" || course.category === selectedCategory) &&
       course.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const handleDeleteChapter = async (courseId, chapterId) => {
+  if (!window.confirm("Are you sure you want to delete this chapter?")) return;
+
+  try {
+   await apiService.deleteChapter(courseId, chapterId);
+
+    alert("Chapter deleted successfully!");
+    // 👇 refresh courses after deletion (if you already have a fetchCourses, call it here)
+    fetchCourses();
+  } catch (err) {
+    console.error("Error deleting chapter:", err);
+    alert("Failed to delete chapter");
+  }
+};
+  
 
   const handleCourseSubmit = async () => {
     try {
@@ -216,41 +231,66 @@ const handleAddChapter = async () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCourses.map((course) => (
-              <div
-                key={course._id}
-                className="bg-gray-800 rounded-xl p-4 shadow-md text-white flex flex-col justify-between"
-              >
-                <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  className="rounded-xl w-full h-40 object-cover mb-4"
-                />
-                <div className="mb-4">
-                  <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-                  <p className="text-sm text-gray-300 mb-1">{course.category}</p>
-                  <p className="text-sm text-gray-400">{course.level}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => openAddChapterModal(course._id)}
-                    className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 flex items-center justify-center text-sm"
-                  >
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    Add Content
-                  </button>
+            <div
+  key={course._id}
+  className="bg-gray-800 rounded-xl p-4 shadow-md text-white flex flex-col justify-between"
+>
+  <img
+    src={course.thumbnail}
+    alt={course.title}
+    className="rounded-xl w-full h-40 object-cover mb-4"
+  />
+  <div className="mb-4">
+    <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+    <p className="text-sm text-gray-300 mb-1">{course.category}</p>
+    <p className="text-sm text-gray-400">{course.level}</p>
+  </div>
 
-                  <button
-                    onClick={() => handlePublishCourse(course._id)}
-                    className={`bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center text-sm ${
-                      course.status === "Published" ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                    disabled={course.status === "Published"}
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    {course.status === "Published" ? "Published" : "Publish"}
-                  </button>
-                </div>
-              </div>
+  {/* 👇 Show chapters with delete buttons */}
+  <div className="mb-4">
+    <h4 className="font-semibold mb-2">Chapters</h4>
+    {course.chapters.length === 0 ? (
+      <p className="text-gray-400 text-sm">No chapters yet</p>
+    ) : (
+      course.chapters.map((chapter) => (
+        <div
+          key={chapter._id}
+          className="flex items-center justify-between bg-gray-700 p-2 rounded mb-2"
+        >
+          <span>{chapter.title}</span>
+          <button
+            onClick={() => handleDeleteChapter(course._id, chapter._id)}
+            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 text-sm"
+          >
+            Delete
+          </button>
+        </div>
+      ))
+    )}
+  </div>
+
+  <div className="flex gap-2">
+    <button
+      onClick={() => openAddChapterModal(course._id)}
+      className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 flex items-center justify-center text-sm"
+    >
+      <BookOpen className="w-4 h-4 mr-2" />
+      Add Content
+    </button>
+
+    <button
+      onClick={() => handlePublishCourse(course._id)}
+      className={`bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center text-sm ${
+        course.status === "Published" ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+      disabled={course.status === "Published"}
+    >
+      <Upload className="w-4 h-4 mr-2" />
+      {course.status === "Published" ? "Published" : "Publish"}
+    </button>
+  </div>
+</div>
+
             ))}
           </div>
         )}

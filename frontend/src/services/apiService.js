@@ -7,6 +7,17 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
 const api = axios.create({
   baseURL: API_BASE_URL,
 });
+// Delete a chapter
+async function deleteChapter(courseId, chapterId) {
+  try {
+    const res = await api.delete(`/instructor/${courseId}/chapters/${chapterId}`);
+    return res.data;
+  } catch (err) {
+    console.error("Error deleting chapter:", err.response?.data || err.message);
+    throw err;
+  }
+}
+
 
 api.interceptors.request.use(
   (config) => {
@@ -64,6 +75,7 @@ addChapter: async (courseId, formData) => {
   if (!res.ok) throw new Error("Failed to add chapter");
   return await res.json();
 },
+  deleteChapter, 
 
   publishCourse: async (courseId) => {
     const { data } = await api.put(`/courses/${courseId}/publish`);
