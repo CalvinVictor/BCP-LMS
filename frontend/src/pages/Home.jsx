@@ -4,23 +4,24 @@ import Layout from "../Components/Layout";
 import WelcomeSection from "../Components/WelcomeSection";
 import CourseCard from "../Components/CourseCard";
 import CategoryFilter from "../Components/CategoryFilter";
-import apiService from "../services/apiService"; // ✅ Import API service
+import TechLogos from "../Components/TechLogos"; // ✅ Import the new component
+import apiService from "../services/apiService";
 import AIChatWidget from "../Components/AIChatWidget";
+import HighlyRatedSection from '../Components/HighlyRatedSection';
 
 function Home() {
   const [hoveredCourse, setHoveredCourse] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [courses, setCourses] = useState([]); // ✅ Dynamic courses
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const categories = ["All", "Frontend", "Backend", "CSS", "JavaScript"];
 
-  // ✅ Fetch published courses
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const data = await apiService.fetchPublishedCourses(); // ✅ New API call
+        const data = await apiService.fetchPublishedCourses();
         setCourses(data);
       } catch (err) {
         console.error("Error fetching courses:", err);
@@ -28,7 +29,6 @@ function Home() {
         setLoading(false);
       }
     };
-
     fetchCourses();
   }, []);
 
@@ -48,6 +48,9 @@ function Home() {
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
+      
+      {/* ✅ ADDED THE NEW TECH LOGOS BANNER HERE */}
+      <TechLogos />
 
       {/* Published Courses */}
       <section className="mb-12">
@@ -55,7 +58,6 @@ function Home() {
           <Clock className="w-6 h-6 mr-2 text-blue-400" />
           Available Courses
         </h2>
-
         {loading ? (
           <p className="text-white">Loading courses...</p>
         ) : filteredCourses.length === 0 ? (
@@ -75,9 +77,7 @@ function Home() {
           </div>
         )}
       </section>
-
-      {/* Featured Section Removed since we're fetching live data */}
-
+ <HighlyRatedSection />
       {/* AI Chat Widget */}
       <AIChatWidget />
     </Layout>

@@ -86,4 +86,24 @@ router.get('/my-completed-courses', verifyToken, async (req, res) => {
     }
 });
 
+// @desc    Get stats for the student's home page welcome header
+// @access  Private
+router.get('/home-stats', verifyToken, async (req, res) => {
+  try {
+    // Find all courses the user is enrolled in
+    const enrollments = await Enrollment.countDocuments({ student: req.user.id });
+    
+    // Find all certificates the user has earned
+    const certificates = await Certificate.countDocuments({ student: req.user.id });
+
+    res.json({
+      coursesInProgress: enrollments,
+      certificatesEarned: certificates,
+    });
+  } catch (err) {
+    console.error("Error fetching home stats:", err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;

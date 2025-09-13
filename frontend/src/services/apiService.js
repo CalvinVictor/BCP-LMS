@@ -143,9 +143,18 @@ getQuizForCourse: async (courseId) => {
  getLeaderboard: async (courseId) => {
     const { data } = await api.get(`/leaderboard/${courseId}`);
     return data;
- }  
+ }, 
 
+ // --- New Function for Home Page Stats ---
+getUserHomeStats: async () => {
+  const { data } = await api.get('/users/home-stats');
+  return data;
+},
 
+  getHomeStats: async () => {
+    const { data } = await api.get('/users/home-stats');
+    return data;
+  },
 
   
 

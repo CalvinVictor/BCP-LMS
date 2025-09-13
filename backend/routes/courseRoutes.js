@@ -127,4 +127,24 @@ router.get('/:courseId/quiz', async (req, res) => {
   }
 });
 
+// @route   GET /api/courses/highly-rated
+// @desc    Get top 3-4 courses with a rating of 4.5 or higher
+// @access  Public
+router.get('/highly-rated', async (req, res) => {
+  try {
+    const highlyRatedCourses = await Course.find({ 
+        status: 'Published', 
+        rating: { $gte: 4.5 } 
+    })
+    .sort({ rating: -1 }) // Sort by highest rating
+    .limit(4) // Limit to the top 4
+    .populate('instructor', 'username');
+
+    res.json(highlyRatedCourses);
+  } catch (err) {
+    console.error("Error fetching highly rated courses:", err.message);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;
