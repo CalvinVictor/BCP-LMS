@@ -1,6 +1,10 @@
 // backend/routes/instructorRoutes.js
 const express = require("express");
+const authMiddleware = require("../middleware/authMiddleware");
+
 const router = express.Router();
+
+
 
 const {
   verifyToken,
@@ -38,6 +42,19 @@ router.post(
   courseController.uploadVideo,        // ✅ Multer middleware for video upload
   courseController.addChapterWithVideo // ✅ Saves chapter + relative video path
 );
+
+// Delete a chapter
+// Delete a chapter
+router.delete(
+  "/:courseId/chapters/:chapterId",
+  verifyToken,
+  verifyInstructor,
+  courseController.deleteChapter
+);
+
+
+
+
 
 // @route   GET /api/instructor/stats
 // @desc    Get instructor dashboard statistics
