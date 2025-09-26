@@ -14,6 +14,7 @@ const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const learningRoutes = require('./routes/learningRoutes');
 const leaderboardRoutes = require('./routes/leaderboardRoutes.js');
 const userRoutes = require('./routes/userRoutes');
+const certificateRoutes = require('./routes/certificateRoutes');
 
 // --- Middleware Import (Corrected) ---
 // Import the specific verifyToken function using destructuring
@@ -48,6 +49,7 @@ app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/learning', learningRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/certificates', certificateRoutes);
 
 // Use the 'verifyToken' function to protect all admin routes
 app.use('/api/admin', verifyToken, adminRoutes);

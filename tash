@@ -1,0 +1,235 @@
+[33mcommit 61a3044f292f5a20087e8ea80fafd6edc8f3f884[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Reflog: HEAD@{0} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull --ff --recurse-submodules --progress origin: Fast-forward
+Merge: 0e72693e 7ca95925
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Sat Sep 13 17:36:57 2025 +0530
+
+    Merge branch 'main' of https://github.com/CalvinVictor/BCP-LMS
+
+[33mcommit 7ca95925b6164e5cb38b34b464746a1599d4497e[m
+Reflog: HEAD@{1} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to HEAD
+Author: AdolfMarshal <122352608+AdolfMarshal@users.noreply.github.com>
+Date:   Wed Sep 10 18:06:05 2025 +0530
+
+    delete chapter
+    
+    Done delete chapter operations on instructor home
+
+[33mcommit 7ca95925b6164e5cb38b34b464746a1599d4497e[m
+Reflog: HEAD@{2} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull --ff --recurse-submodules --progress origin: Fast-forward
+Author: AdolfMarshal <122352608+AdolfMarshal@users.noreply.github.com>
+Date:   Wed Sep 10 18:06:05 2025 +0530
+
+    delete chapter
+    
+    Done delete chapter operations on instructor home
+
+[33mcommit d2d12827348f1fbe3f23635e78f132038f7e6748[m
+Reflog: HEAD@{3} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull --ff --recurse-submodules --progress origin: Fast-forward
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Sat Sep 6 21:28:10 2025 +0530
+
+    user profile working
+
+[33mcommit 52e9928b9cafbec6c0851fb08cb335491fa4503b[m
+Reflog: HEAD@{4} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: commit: Leaderboard added and test module fixed
+Author: Usha V <usha.v.0812@gmail.com>
+Date:   Sat Sep 6 18:47:08 2025 +0530
+
+    Leaderboard added and test module fixed
+
+[33mcommit 898316153327390deae9b4fbc9ed4a018deb2c8f[m
+Reflog: HEAD@{5} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull --ff --recurse-submodules --progress origin: Fast-forward
+Author: AdolfMarshal <122352608+AdolfMarshal@users.noreply.github.com>
+Date:   Thu Aug 28 14:38:09 2025 +0530
+
+    Revert "vedio player fixed"
+    
+    This reverts commit 710092126ca4ad2d457d85cb57d572695a77ab5c.
+
+[33mcommit 79a49b8f01177fc3978db63ea24a4f4e9b605443[m
+Reflog: HEAD@{6} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to 79a49b8f01177fc3978db63ea24a4f4e9b605443
+Author: Usha V <usha.v.0812@gmail.com>
+Date:   Thu Jul 31 22:04:50 2025 +0530
+
+    commiting after 200 days
+
+[33mcommit 130c5f95691749285888b4166b250f1728493682[m
+Reflog: HEAD@{7} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: commit: Test module
+Author: Usha V <usha.v.0812@gmail.com>
+Date:   Thu Aug 28 14:16:18 2025 +0530
+
+    Test module
+    
+    works with dynamic leaderboard
+
+[33mcommit 79a49b8f01177fc3978db63ea24a4f4e9b605443[m
+Reflog: HEAD@{8} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to HEAD
+Author: Usha V <usha.v.0812@gmail.com>
+Date:   Thu Jul 31 22:04:50 2025 +0530
+
+    commiting after 200 days
+
+[33mcommit 79a49b8f01177fc3978db63ea24a4f4e9b605443[m
+Reflog: HEAD@{9} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: commit: commiting after 200 days
+Author: Usha V <usha.v.0812@gmail.com>
+Date:   Thu Jul 31 22:04:50 2025 +0530
+
+    commiting after 200 days
+
+[33mcommit a065128c71e928856bd0700f5d04d4bbb7f9ddcc[m
+Reflog: HEAD@{10} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull: Fast-forward
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Thu Jul 31 20:18:20 2025 +0530
+
+    hehe
+
+[33mcommit 035dac69c57a672cfec9f3565dd21aa5ceb11642[m
+Reflog: HEAD@{11} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to HEAD
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Wed Jul 30 19:10:59 2025 +0530
+
+    .
+
+[33mcommit 035dac69c57a672cfec9f3565dd21aa5ceb11642[m
+Reflog: HEAD@{12} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull --ff --recurse-submodules --progress origin: Fast-forward
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Wed Jul 30 19:10:59 2025 +0530
+
+    .
+
+[33mcommit 6e6047fc563a37d6071f7f85ab36655387ad2254[m
+Reflog: HEAD@{13} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull --ff --recurse-submodules --progress origin: Fast-forward
+Author: AdolfMarshal <122352608+AdolfMarshal@users.noreply.github.com>
+Date:   Wed Jul 30 17:34:26 2025 +0530
+
+    add course done
+    
+    course chapters vedio addition done
+
+[33mcommit c7eb80b29a55d80886274363eef2c57207edf9db[m
+Reflog: HEAD@{14} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to HEAD
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Mon Jul 28 10:27:55 2025 +0530
+
+    ai
+
+[33mcommit c7eb80b29a55d80886274363eef2c57207edf9db[m
+Reflog: HEAD@{15} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to HEAD
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Mon Jul 28 10:27:55 2025 +0530
+
+    ai
+
+[33mcommit c7eb80b29a55d80886274363eef2c57207edf9db[m
+Reflog: HEAD@{16} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to c7eb80b29a55d80886274363eef2c57207edf9db
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Mon Jul 28 10:27:55 2025 +0530
+
+    ai
+
+[33mcommit 2db2bc8656c22e9f9849ce2b261670c97924e50b[m
+Reflog: HEAD@{17} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to HEAD
+Author: Usha V <usha.v.0812@gmail.com>
+Date:   Wed Jul 30 17:32:54 2025 +0530
+
+    .
+
+[33mcommit 2db2bc8656c22e9f9849ce2b261670c97924e50b[m
+Reflog: HEAD@{18} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: commit: .
+Author: Usha V <usha.v.0812@gmail.com>
+Date:   Wed Jul 30 17:32:54 2025 +0530
+
+    .
+
+[33mcommit c7eb80b29a55d80886274363eef2c57207edf9db[m
+Reflog: HEAD@{19} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to origin/main
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Mon Jul 28 10:27:55 2025 +0530
+
+    ai
+
+[33mcommit 48398eed69a0c688f2b8cfac744fefa8da8b92ac[m
+Reflog: HEAD@{20} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: commit: chore: Stop tracking backend/node_modules
+Author: Usha V <usha.v.0812@gmail.com>
+Date:   Mon Jul 28 18:36:09 2025 +0530
+
+    chore: Stop tracking backend/node_modules
+
+[33mcommit 5078609f998c798584b81f92b73631b64cab5548[m
+Reflog: HEAD@{21} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to HEAD
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Sat Jul 12 00:55:58 2025 +0530
+
+    login with backend done
+
+[33mcommit 5078609f998c798584b81f92b73631b64cab5548[m
+Reflog: HEAD@{22} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull --ff --recurse-submodules --progress origin: Fast-forward
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Sat Jul 12 00:55:58 2025 +0530
+
+    login with backend done
+
+[33mcommit 08c8e0d5ea5ee1bc6c1676bf8ba39913bbc40729[m
+Reflog: HEAD@{23} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: reset: moving to HEAD
+Author: AdolfMarshal <122352608+AdolfMarshal@users.noreply.github.com>
+Date:   Wed Jul 9 15:23:32 2025 +0530
+
+    2
+
+[33mcommit 08c8e0d5ea5ee1bc6c1676bf8ba39913bbc40729[m
+Reflog: HEAD@{24} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull --ff --recurse-submodules --progress origin: Fast-forward
+Author: AdolfMarshal <122352608+AdolfMarshal@users.noreply.github.com>
+Date:   Wed Jul 9 15:23:32 2025 +0530
+
+    2
+
+[33mcommit c090dab3c4dce97130cd9d5fa6e47516292b87d5[m
+Reflog: HEAD@{25} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: pull --ff --recurse-submodules --progress origin: Fast-forward
+Merge: 871f4829 906691d9
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Tue Jul 8 17:42:51 2025 +0530
+
+    Merge branch 'main' of https://github.com/CalvinVictor/BCP-LMS
+
+[33mcommit 906691d9b877f14773fbac4802b50dab0253e2e4[m
+Reflog: HEAD@{26} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: commit: urupadiyana commit
+Author: Usha V <usha.v.0812@gmail.com>
+Date:   Tue Jul 8 17:35:35 2025 +0530
+
+    urupadiyana commit
+
+[33mcommit e72b8c9093eaa8fafdbaf360f08327f1e0942b52[m
+Reflog: HEAD@{27} (Usha V <usha.v.0812@gmail.com>)
+Reflog message: clone: from https://github.com/CalvinVictor/BCP-LMS.git
+Author: CalvinVictor <calvinvic1611@gmail.com>
+Date:   Tue Jul 8 16:58:39 2025 +0530
+
+    initial commit
