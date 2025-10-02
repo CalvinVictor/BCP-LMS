@@ -89,8 +89,8 @@ const LeaderboardPage = () => {
                     ) : leaderboard.length === 0 ? (
                         <div className="text-center py-12 text-purple-400">
                             <Award className="w-20 h-20 mx-auto mb-6 opacity-60 drop-shadow-lg" />
-                            <p className="text-2xl mb-3 font-semibold">No scores yet!</p>
-                            <p className="text-lg">Be the first to complete the quiz and claim the top spot!</p>
+                            <p className="text-2xl mb-3 font-semibold">No scores yet!!</p>
+                            <p className="text-lg">Be the first to complete the quiz and claim the top spot!!</p>
                         </div>
                     ) : (
                         <div className="space-y-6 max-h-[480px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900">
