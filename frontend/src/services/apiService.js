@@ -147,7 +147,7 @@ getQuizForCourse: async (courseId) => {
 
    submitTestResult: async (courseId, resultData) => {
   // 'resultData' is the object { score: 1200, timeTaken: 7 }
-  // We pass it directly to the backend.
+  // We pass it directly to the backe
   const { data } = await api.post(`/leaderboard/submit/${courseId}`, resultData);
   return data;
 },
