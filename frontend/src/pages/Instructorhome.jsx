@@ -1,3 +1,4 @@
+//InstructorDashboard
 import React, { useState, useEffect } from "react";
 import {
   Clock,
@@ -21,6 +22,8 @@ function InstructorDashboard() {
   const [showAddCourseModal, setShowAddCourseModal] = useState(false);
   const [showAddChapterModal, setShowAddChapterModal] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [expandedCourses, setExpandedCourses] = useState([]); // 👈 Added state to toggle chapters
 
   const [newCourse, setNewCourse] = useState({
     title: "",
@@ -64,21 +67,18 @@ function InstructorDashboard() {
       (selectedCategory === "All" || course.category === selectedCategory) &&
       course.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
   const handleDeleteChapter = async (courseId, chapterId) => {
-  if (!window.confirm("Are you sure you want to delete this chapter?")) return;
-
-  try {
-   await apiService.deleteChapter(courseId, chapterId);
-
-    alert("Chapter deleted successfully!");
-    // 👇 refresh courses after deletion (if you already have a fetchCourses, call it here)
-    fetchCourses();
-  } catch (err) {
-    console.error("Error deleting chapter:", err);
-    alert("Failed to delete chapter");
-  }
-};
-  
+    if (!window.confirm("Are you sure you want to delete this chapter?")) return;
+    try {
+      await apiService.deleteChapter(courseId, chapterId);
+      alert("Chapter deleted successfully!");
+      fetchCourses();
+    } catch (err) {
+      console.error("Error deleting chapter:", err);
+      alert("Failed to delete chapter");
+    }
+  };
 
   const handleCourseSubmit = async () => {
     try {
@@ -86,10 +86,8 @@ function InstructorDashboard() {
         ...newCourse,
         totalVideos: parseInt(newCourse.totalVideos, 10),
       };
-
       await apiService.createCourse(courseData);
       await fetchCourses();
-
       setShowAddCourseModal(false);
       setNewCourse({
         title: "",
@@ -119,31 +117,29 @@ function InstructorDashboard() {
     setShowAddChapterModal(true);
   };
 
-const handleAddChapter = async () => {
-  try {
-    const formData = new FormData();
-    formData.append("title", newChapter.title);
-    formData.append("description", newChapter.description);
-    if (newChapter.videoFile) {
-      formData.append("video", newChapter.videoFile);
+  const handleAddChapter = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("title", newChapter.title);
+      formData.append("description", newChapter.description);
+      if (newChapter.videoFile) {
+        formData.append("video", newChapter.videoFile);
+      }
+      await apiService.addChapter(selectedCourseId, formData);
+      await fetchCourses();
+      alert("✅ Chapter added successfully!");
+      setShowAddChapterModal(false);
+      setNewChapter({
+        title: "",
+        description: "",
+        videoFile: null,
+        materials: [""],
+        mcqs: [{ question: "", options: ["", "", "", ""], correctAnswer: "" }],
+      });
+    } catch (err) {
+      alert("❌ Failed to add chapter.");
     }
-
-    await apiService.addChapter(selectedCourseId, formData);
-    await fetchCourses();
-    alert("✅ Chapter added successfully!");
-
-    setShowAddChapterModal(false);
-    setNewChapter({
-      title: "",
-      description: "",
-      videoFile: null,
-      materials: [""],
-      mcqs: [{ question: "", options: ["", "", "", ""], correctAnswer: "" }],
-    });
-  } catch (err) {
-    alert("❌ Failed to add chapter.");
-  }
-};
+  };
 
   const handleMCQChange = (index, field, value) => {
     const updatedMCQs = [...newChapter.mcqs];
@@ -165,6 +161,14 @@ const handleAddChapter = async () => {
   const removeMCQ = (index) => {
     const updatedMCQs = newChapter.mcqs.filter((_, i) => i !== index);
     setNewChapter({ ...newChapter, mcqs: updatedMCQs });
+  };
+
+  const toggleChapters = (courseId) => {
+    if (expandedCourses.includes(courseId)) {
+      setExpandedCourses(expandedCourses.filter((id) => id !== courseId));
+    } else {
+      setExpandedCourses([...expandedCourses, courseId]);
+    }
   };
 
   return (
@@ -231,130 +235,155 @@ const handleAddChapter = async () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredCourses.map((course) => (
-            <div
-  key={course._id}
-  className="bg-gray-800 rounded-xl p-4 shadow-md text-white flex flex-col justify-between"
->
-  <img
-    src={course.thumbnail}
-    alt={course.title}
-    className="rounded-xl w-full h-40 object-cover mb-4"
-  />
-  <div className="mb-4">
-    <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
-    <p className="text-sm text-gray-300 mb-1">{course.category}</p>
-    <p className="text-sm text-gray-400">{course.level}</p>
-  </div>
+              <div
+                key={course._id}
+                className="bg-gray-800 rounded-xl p-4 shadow-md text-white flex flex-col justify-between"
+              >
+                <img
+                  src={course.thumbnail}
+                  alt={course.title}
+                  className="rounded-xl w-full h-40 object-cover mb-4"
+                />
+                <div className="mb-4">
+                  <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+                  <p className="text-sm text-gray-300 mb-1">{course.category}</p>
+                  <p className="text-sm text-gray-400">{course.level}</p>
+                </div>
 
-  {/* 👇 Show chapters with delete buttons */}
-  <div className="mb-4">
-    <h4 className="font-semibold mb-2">Chapters</h4>
-    {course.chapters.length === 0 ? (
-      <p className="text-gray-400 text-sm">No chapters yet</p>
-    ) : (
-      course.chapters.map((chapter) => (
-        <div
-          key={chapter._id}
-          className="flex items-center justify-between bg-gray-700 p-2 rounded mb-2"
-        >
-          <span>{chapter.title}</span>
-          <button
-            onClick={() => handleDeleteChapter(course._id, chapter._id)}
-            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 text-sm"
-          >
-            Delete
-          </button>
-        </div>
-      ))
-    )}
-  </div>
+                {/* 👇 Chapters toggle */}
+                <div className="mb-4">
+                  <button
+                    onClick={() => toggleChapters(course._id)}
+                    className="bg-gray-700 text-white px-4 py-2 rounded mb-2 hover:bg-gray-600"
+                  >
+                    {expandedCourses.includes(course._id) ? "Hide Chapters" : "View Chapters"}
+                  </button>
 
-  <div className="flex gap-2">
-    <button
-      onClick={() => openAddChapterModal(course._id)}
-      className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 flex items-center justify-center text-sm"
-    >
-      <BookOpen className="w-4 h-4 mr-2" />
-      Add Content
-    </button>
+                  {expandedCourses.includes(course._id) && (
+                    <div>
+                      {course.chapters.length === 0 ? (
+                        <p className="text-gray-400 text-sm">No chapters yet</p>
+                      ) : (
+                        course.chapters.map((chapter) => (
+                          <div
+                            key={chapter._id}
+                            className="flex items-center justify-between bg-gray-700 p-2 rounded mb-2"
+                          >
+                            <span>{chapter.title}</span>
+                            <div className="relative">
+                              <button
+                                onClick={() =>
+                                  setOpenDropdown(openDropdown === chapter._id ? null : chapter._id)
+                                }
+                                className="p-2 rounded hover:bg-gray-600"
+                              >
+                                ⋮
+                              </button>
 
-    <button
-      onClick={() => handlePublishCourse(course._id)}
-      className={`bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center text-sm ${
-        course.status === "Published" ? "opacity-50 cursor-not-allowed" : ""
-      }`}
-      disabled={course.status === "Published"}
-    >
-      <Upload className="w-4 h-4 mr-2" />
-      {course.status === "Published" ? "Published" : "Publish"}
-    </button>
-  </div>
-</div>
+                              {openDropdown === chapter._id && (
+                                <div className="absolute right-0 mt-2 w-40 bg-gray-800 text-white rounded-lg shadow-lg z-10">
+                                  <button
+                                    onClick={() => handleDeleteChapter(course._id, chapter._id)}
+                                    className="w-full text-left px-4 py-2 hover:bg-red-600 rounded"
+                                  >
+                                    Delete Chapter
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
 
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => openAddChapterModal(course._id)}
+                    className="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 flex items-center justify-center text-sm"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Add Content
+                  </button>
+
+                  <button
+                    onClick={() => handlePublishCourse(course._id)}
+                    className={`bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 flex items-center justify-center text-sm ${
+                      course.status === "Published" ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    disabled={course.status === "Published"}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {course.status === "Published" ? "Published" : "Publish"}
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         )}
       </section>
+
       {/* ✅ Add Course Modal */}
-{showAddCourseModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-gray-800 p-6 rounded-2xl w-full max-w-lg">
-      <h3 className="text-xl font-bold text-white mb-4">Create New Course</h3>
+      {showAddCourseModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-2xl w-full max-w-lg">
+            <h3 className="text-xl font-bold text-white mb-4">Create New Course</h3>
 
-      <input
-        type="text"
-        placeholder="Course Title"
-        value={newCourse.title}
-        onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
-        className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
-      />
-      <textarea
-        placeholder="Description"
-        value={newCourse.description}
-        onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-        className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
-      ></textarea>
-      <input
-        type="text"
-        placeholder="Category"
-        value={newCourse.category}
-        onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
-        className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
-      />
-      <input
-        type="text"
-        placeholder="Thumbnail URL"
-        value={newCourse.thumbnail}
-        onChange={(e) => setNewCourse({ ...newCourse, thumbnail: e.target.value })}
-        className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
-      />
-      <input
-        type="number"
-        placeholder="Total Videos"
-        value={newCourse.totalVideos}
-        onChange={(e) => setNewCourse({ ...newCourse, totalVideos: e.target.value })}
-        className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
-      />
+            <input
+              type="text"
+              placeholder="Course Title"
+              value={newCourse.title}
+              onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+              className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
+            />
+            <textarea
+              placeholder="Description"
+              value={newCourse.description}
+              onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+              className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
+            ></textarea>
+            <input
+              type="text"
+              placeholder="Category"
+              value={newCourse.category}
+              onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
+              className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
+            />
+            <input
+              type="text"
+              placeholder="Thumbnail URL"
+              value={newCourse.thumbnail}
+              onChange={(e) => setNewCourse({ ...newCourse, thumbnail: e.target.value })}
+              className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
+            />
+            <input
+              type="number"
+              placeholder="Total Videos"
+              value={newCourse.totalVideos}
+              onChange={(e) => setNewCourse({ ...newCourse, totalVideos: e.target.value })}
+              className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
+            />
 
-      <div className="flex gap-4">
-        <button
-          onClick={() => setShowAddCourseModal(false)}
-          className="flex-1 bg-gray-700 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleCourseSubmit}
-          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
-        >
-          Create
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowAddCourseModal(false)}
+                className="flex-1 bg-gray-700 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCourseSubmit}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-
+      {/* ✅ Add Chapter Modal */}
       {showAddChapterModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-2xl w-full max-w-lg overflow-y-auto max-h-[90vh]">
@@ -383,7 +412,6 @@ const handleAddChapter = async () => {
   }
   className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
 />
-
 
             {/* MCQ Section */}
             <h4 className="text-lg font-semibold text-white mt-4">Add MCQs</h4>

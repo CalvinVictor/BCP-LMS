@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as THREE from "three";
 import NET from "vanta/dist/vanta.net.min";
-// Change this line in AdminHome.jsx
-// The new, simpler import if you move the folder
 import api from '../services/axiosConfig';
+import apiService from "../services/apiService";
+
 import { 
   Users, 
   BookOpen, 
@@ -33,10 +33,9 @@ import {
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [searchTerm, setSearchTerm] = useState("");
-  // Add this with your other useState hooks
-const [instructors, setInstructors] = useState([]);
+  const [instructors, setInstructors] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState("");
+  const [modalType, setModalType] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
@@ -47,7 +46,15 @@ const [instructors, setInstructors] = useState([]);
     totalStudents: 0
   });
   const [users, setUsers] = useState([]);
+  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", role: "student" });
   const [courses, setCourses] = useState([]);
+  const [newCourse, setNewCourse] = useState({
+    title: "",
+    instructor: "",
+    category: "",
+    duration: "",
+    level: "",
+  });
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [userFilter, setUserFilter] = useState("all");
@@ -56,7 +63,7 @@ const [instructors, setInstructors] = useState([]);
   const navigate = useNavigate();
   const vantaRef = useRef(null);
 
-  // Vanta Background
+  // Vanta Background (Consolidated from two useEffects)
   useEffect(() => {
     const effect = NET({
       el: vantaRef.current,
@@ -72,27 +79,16 @@ const [instructors, setInstructors] = useState([]);
     return () => effect.destroy();
   }, []);
 
-  // Initialize data[]);
-// Vanta Background (This one is perfect, leave it as is)
-  useEffect(() => {
-    const effect = NET({
-      el: vantaRef.current,
-      THREE,
-      // ... your vanta settings
-    });
-    return () => effect.destroy();
-  }, []);
-
-  // --- REPLACE YOUR OLD DATA-FETCHING useEffect WITH THIS BLOCK ---
+  // Initialize data (Consolidated and simplified)
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
         // Use Promise.all to run all API calls in parallel for speed
         const [statsRes, usersRes, coursesRes] = await Promise.all([
-          api.get('/admin/stats'),      // 1. Efficiently get all counts
-          api.get('/admin/users'),      // 2. Get the full user list
-          api.get('/admin/courses')     // 3. Get the full course list
+          api.get('/admin/stats'),    // 1. Efficiently get all counts
+          api.get('/admin/users'),    // 2. Get the full user list
+          api.get('/admin/courses')   // 3. Get the full course list
         ]);
 
         // Set all your state from the responses
@@ -101,6 +97,10 @@ const [instructors, setInstructors] = useState([]);
         setFilteredUsers(usersRes.data); // Initialize filtered list
         setCourses(coursesRes.data);
         setFilteredCourses(coursesRes.data); // Initialize filtered list
+        
+        // Populate instructors state based on fetched users (prevents extra API call on tab switch)
+        const allInstructors = usersRes.data.filter(user => user.role === 'instructor');
+        setInstructors(allInstructors);
 
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -111,24 +111,11 @@ const [instructors, setInstructors] = useState([]);
     };
 
     fetchData();
-  }, []); // The empty array [] means this runs only once when the component mounts
+  }, []); 
+  
+  // NOTE: REMOVED REDUNDANT useEffects and loadUsers/loadCourses functions here.
+
   // Filter users
-// Find your main data-fetching useEffect and add this logic
-useEffect(() => {
-  // This fetches instructors only when the tab is opened and the list is empty
-  if (activeTab === 'instructors' && instructors.length === 0) {
-    const fetchInstructors = async () => {
-      try {
-        const { data } = await api.get('/admin/instructors');
-        setInstructors(data);
-      } catch (error) {
-        console.error("Failed to fetch instructors", error);
-        showMessage("Could not load instructors", "error");
-      }
-    };
-    fetchInstructors();
-  }
-}, [activeTab]); // This effect now runs whenever the activeTab changes
   useEffect(() => {
     let filtered = users;
     if (userFilter !== "all") {
@@ -146,6 +133,7 @@ useEffect(() => {
   // Filter courses
   useEffect(() => {
     let filtered = courses;
+    // NOTE: courseFilter in UI is based on 'status' ('active'/'draft'), not 'all'
     if (courseFilter !== "all") {
       filtered = filtered.filter(course => course.status === courseFilter);
     }
@@ -171,7 +159,7 @@ useEffect(() => {
     localStorage.removeItem("username");
     navigate("/");
   };
-
+  
   // Handle user actions - FIXED to use _id
   const handleUserAction = async (action, userId) => {
     setIsLoading(true);
@@ -192,31 +180,46 @@ useEffect(() => {
     }
   };
 
-  // Handle course actions - FIXED to use _id
+  // Handle course actions - FIXED to use _id and add API calls
   const handleCourseAction = async (action, courseId) => {
     setIsLoading(true);
     try {
       if (action === "delete") {
-        // If you have a courses API endpoint
-        // await api.delete(`/admin/courses/${courseId}`);
+        await api.delete(`/admin/courses/${courseId}`); // <<< API CALL ADDED
         setCourses(courses.filter(course => course._id !== courseId)); // Use _id
         showMessage("Course deleted successfully", "success");
       } else if (action === "toggle-status") {
-        // If you have a courses API endpoint
-        // const res = await api.put(`/admin/courses/${courseId}/toggle`);
+        const res = await api.put(`/admin/courses/${courseId}/toggle`); // <<< API CALL ADDED
         setCourses(courses.map(course => 
-          course._id === courseId  // Use _id
-            ? { ...course, status: course.status === "active" ? "draft" : "active" }
+          course._id === courseId 
+            ? res.data.course // Use the returned course object
             : course
         ));
         showMessage("Course status updated", "success");
       }
     } catch (error) {
-      showMessage("Action failed", "error");
+      showMessage(error.response?.data?.error || "Action failed", "error");
     } finally {
       setIsLoading(false);
     }
   };
+  
+  // NOTE: Removed redundant handleAddCourse, handleDelete, and handleToggleCourse
+
+  // Open modal
+  const openModal = (type, item = null) => {
+    setModalType(type);
+    setSelectedItem(item);
+    setShowModal(true);
+  };
+
+  // Close modal
+  const closeModal = () => {
+    setShowModal(false);
+    setModalType("");
+    setSelectedItem(null);
+  };
+
 
   // Modal component
   const Modal = ({ children, title, onClose }) => (
@@ -333,8 +336,8 @@ useEffect(() => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <StatsCard title="Total Users" value={stats.totalUsers} icon={Users} color="text-blue-400" />
                   <StatsCard title="Total Courses" value={stats.totalCourses} icon={BookOpen} color="text-green-400" />
-                  <StatsCard title="Instructors" value={stats.totalInstructors} icon={GraduationCap} color="text-purple-400" />
-                  <StatsCard title="Students" value={stats.totalStudents} icon={Award} color="text-yellow-400" />
+                  <StatsCard title="Instructors" value={stats.instructors} icon={GraduationCap} color="text-purple-400" />
+                  <StatsCard title="Students" value={stats.students} icon={Award} color="text-yellow-400" />
                 </div>
 
                 <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-6 border border-white border-opacity-20">
@@ -360,7 +363,7 @@ useEffect(() => {
               </div>
             )}
 
-            {/* Users Tab - FIXED to use _id */}
+            {/* Users Tab */}
             {activeTab === "users" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -375,10 +378,7 @@ useEffect(() => {
                       <option value="student">Students</option>
                       <option value="instructor">Instructors</option>
                     </select>
-                    <button className="flex items-center space-x-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white transition-colors">
-                      <Plus size={16} />
-                      <span>Add User</span>
-                    </button>
+                   
                   </div>
                 </div>
 
@@ -426,30 +426,16 @@ useEffect(() => {
                             <td className="px-6 py-4 text-sm text-gray-400">
                               {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center space-x-2">
-                                <button className="p-1 text-gray-400 hover:text-white transition-colors">
-                                  <Eye size={16} />
-                                </button>
-                                <button className="p-1 text-gray-400 hover:text-white transition-colors">
-                                  <Edit size={16} />
-                                </button>
-                                <button 
-                                  onClick={() => handleUserAction("toggle-status", user._id)}
-                                  className="p-1 text-gray-400 hover:text-white transition-colors"
-                                  disabled={isLoading}
-                                >
-                                  {user.status === "active" ? <UserX size={16} /> : <UserCheck size={16} />}
-                                </button>
-                                <button 
-                                  onClick={() => handleUserAction("delete", user._id)}
-                                  className="p-1 text-gray-400 hover:text-red-400 transition-colors"
-                                  disabled={isLoading}
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
-                            </td>
+                           <td className="px-6 py-4">
+  <button 
+    onClick={() => handleUserAction("delete", user._id)}
+    className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+    disabled={isLoading}
+  >
+    <Trash2 size={16} />
+  </button>
+</td>
+
                           </tr>
                         ))}
                       </tbody>
@@ -459,7 +445,7 @@ useEffect(() => {
               </div>
             )}
 
-            {/* Courses Tab - FIXED to use _id */}
+            {/* Courses Tab */}
             {activeTab === "courses" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
@@ -474,10 +460,7 @@ useEffect(() => {
                       <option value="active">Active</option>
                       <option value="draft">Draft</option>
                     </select>
-                    <button className="flex items-center space-x-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white transition-colors">
-                      <Plus size={16} />
-                      <span>Add Course</span>
-                    </button>
+                
                   </div>
                 </div>
 
@@ -513,30 +496,16 @@ useEffect(() => {
                                 {course.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center space-x-2">
-                                <button className="p-1 text-gray-400 hover:text-white transition-colors">
-                                  <Eye size={16} />
-                                </button>
-                                <button className="p-1 text-gray-400 hover:text-white transition-colors">
-                                  <Edit size={16} />
-                                </button>
-                                <button 
-                                  onClick={() => handleCourseAction("toggle-status", course._id)}
-                                  className="p-1 text-gray-400 hover:text-white transition-colors"
-                                  disabled={isLoading}
-                                >
-                                  {course.status === "active" ? <UserX size={16} /> : <UserCheck size={16} />}
-                                </button>
-                                <button 
-                                  onClick={() => handleCourseAction("delete", course._id)}
-                                  className="p-1 text-gray-400 hover:text-red-400 transition-colors"
-                                  disabled={isLoading}
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
-                            </td>
+                           <td className="px-6 py-4">
+  <button
+    onClick={() => handleCourseAction("delete", course._id)}
+    className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+    disabled={isLoading}
+  >
+    <Trash2 size={16} />
+  </button>
+</td>
+
                           </tr>
                         ))}
                       </tbody>
@@ -546,19 +515,16 @@ useEffect(() => {
               </div>
             )}
 
-            {/* Instructors Tab - FIXED to use _id */}
+            {/* Instructors Tab */}
             {activeTab === "instructors" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-bold text-white">Instructor Management</h2>
-                  <button className="flex items-center space-x-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg text-white transition-colors">
-                    <Plus size={16} />
-                    <span>Add Instructor</span>
-                  </button>
+                 
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredUsers.filter(user => user.role === "instructor").map((instructor) => (
+                  {users.filter(user => user.role === "instructor").map((instructor) => (
                     <div key={instructor._id} className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-6 border border-white border-opacity-20">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-white">{instructor.username}</h3>
@@ -572,8 +538,9 @@ useEffect(() => {
                       </div>
                       <p className="text-gray-400 text-sm mb-4">{instructor.email}</p>
                       <div className="flex items-center justify-between text-sm text-gray-400">
+                        {/* NOTE: This filtering assumes instructor name is used for courses.instructor */}
                         <span>Courses: {courses.filter(c => c.instructor === instructor.username).length}</span>
-                        <span>Students: {courses.filter(c => c.instructor === instructor.username).reduce((sum, c) => sum + c.students, 0)}</span>
+                        <span>Students: {courses.filter(c => c.instructor === instructor.username).reduce((sum, c) => sum + (c.students || 0), 0)}</span>
                       </div>
                       <div className="flex items-center space-x-2 mt-4">
                         <button className="flex-1 px-3 py-2 bg-purple-500 bg-opacity-20 hover:bg-opacity-30 rounded-lg text-purple-300 transition-colors">
@@ -588,6 +555,7 @@ useEffect(() => {
                 </div>
               </div>
             )}
+            
             {/* Settings Tab */}
             {activeTab === "settings" && (
               <div className="space-y-6">
@@ -623,13 +591,90 @@ useEffect(() => {
                       </div>
                     </div>
                   </div>
-
-                  <div className="w-full px-3 py-2 bg-white bg-opacity-10 backdrop-blur-xl rounded-lg border border-white border-opacity-20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
-                      </div>
-                    </div>
-                 
+                  {/* NOTE: There was a partial div copy paste here. I'll include the relevant parts to keep the structure. */}
+                   <div className="bg-white bg-opacity-10 backdrop-blur-xl rounded-xl p-6 border border-white border-opacity-20">
+                     <h3 className="text-lg font-semibold text-white mb-4">API/Integration Settings</h3>
+                     <p className="text-gray-400">Placeholder for future API keys and integration controls.</p>
+                   </div>
+                  {/* End of Settings Fix */}
+                </div>
+              </div>
             )}
+            
+            {/* MODAL */}
+            {showModal && (
+              <Modal title={modalType === "add-user" ? "Add User" : "Add Course"} onClose={closeModal}>
+                {modalType === "add-user" && (
+                  <form 
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target);
+                      const payload = {
+                        username: formData.get("username"),
+                        email: formData.get("email"),
+                        role: formData.get("role"),
+                        password: formData.get("password"),
+                      };
+                      try {
+                        // FIX: Use apiService for consistency and correct endpoint
+                        const res = await apiService.post("/admin/users", payload); 
+                        setUsers([...users, res.data]);
+                        showMessage("User added successfully", "success");
+                        closeModal();
+                      } catch (error) {
+                        showMessage(error.response?.data?.error || "Failed to add user", "error");
+                      }
+                    }}
+                    className="space-y-4"
+                  >
+                    <input name="username" placeholder="Username" className="w-full p-2 rounded bg-gray-800 text-white" required />
+                    <input name="email" type="email" placeholder="Email" className="w-full p-2 rounded bg-gray-800 text-white" required />
+                    <select name="role" className="w-full p-2 rounded bg-gray-800 text-white">
+                      <option value="student">Student</option>
+                      <option value="instructor">Instructor</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                    <input name="password" type="password" placeholder="Password" className="w-full p-2 rounded bg-gray-800 text-white" required />
+                    
+                  </form>
+                )}
+
+                {modalType === "add-course" && (
+                  <form 
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target);
+                      const payload = {
+                        title: formData.get("title"),
+                        category: formData.get("category"),
+                        instructor: formData.get("instructor"),
+                        duration: formData.get("duration"), // <<< ADDED REQUIRED FIELD
+                        level: formData.get("level"),     // <<< ADDED REQUIRED FIELD
+                      };
+                      try {
+                        // FIX: Use apiService and correctly handle server response
+                        const res = await apiService.post("/admin/courses", payload); 
+                        // Server response contains { course: newCourse }, so we use res.data.course
+                        setCourses([...courses, res.data.course]); 
+                        showMessage("Course added successfully", "success");
+                        closeModal();
+                      } catch (error) {
+                        showMessage(error.response?.data?.error || "Failed to add course", "error");
+                      }
+                    }}
+                    className="space-y-4"
+                  >
+                    <input name="title" placeholder="Course Title" className="w-full p-2 rounded bg-gray-800 text-white" required />
+                    <input name="category" placeholder="Category" className="w-full p-2 rounded bg-gray-800 text-white" required />
+                    <input name="instructor" placeholder="Instructor Name" className="w-full p-2 rounded bg-gray-800 text-white" required />
+                    <input name="duration" placeholder="Duration (e.g., 10 hours)" className="w-full p-2 rounded bg-gray-800 text-white" required /> {/* <<< ADDED */}
+                    <input name="level" placeholder="Level (e.g., Beginner)" className="w-full p-2 rounded bg-gray-800 text-white" required />       {/* <<< ADDED */}
+                    <button type="submit" className="w-full bg-purple-600 py-2 rounded text-white">Add Course</button>
+                  </form>
+                )}
+              </Modal>
+            )}
+
           </main>
         </div>
       </div>

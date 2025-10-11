@@ -40,6 +40,33 @@ router.get('/my-courses', verifyToken, async (req, res) => {
 });
 
 // @route   GET /api/enrollments/status/:courseId
+router.get('/my-courses', verifyToken, async (req, res) => {
+    try {
+        const enrollments = await Enrollment.find({ student: req.user.id })
+            // This is the crucial part. It finds the full course document for each enrollment.
+            .populate({
+                path: 'course',
+                // This nested populate also gets the instructor's username for the course card
+                populate: { 
+                    path: 'instructor',
+                    select: 'username'
+                }
+            });
+        
+        if (!enrollments) {
+            return res.json([]); // Always return an array, even if it's empty
+        }
+
+        // Extract just the course data from the enrollment objects
+        const courses = enrollments.map(enrollment => enrollment.course).filter(course => course != null);
+        
+        res.json(courses);
+    } catch (err) {
+        console.error("Error fetching enrolled courses:", err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 // @desc    Check if the current user is enrolled in a specific course
 router.get('/status/:courseId', verifyToken, async (req, res) => {
     try {
@@ -58,4 +85,4 @@ router.get('/status/:courseId', verifyToken, async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = router;
