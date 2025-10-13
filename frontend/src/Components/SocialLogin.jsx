@@ -1,26 +1,24 @@
-import React from "react";
+import React from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 
-const SocialLogin = ({ handleSocialLogin }) => {
+// This component now takes functions to handle success and error from the parent
+const SocialLogin = ({ onGoogleSuccess, onGoogleError }) => {
   return (
-    <div className="flex gap-3 mb-6">
-      <button
-        type="button"
-        onClick={() => handleSocialLogin("google")}
-        className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-white bg-opacity-5 border border-white border-opacity-10 rounded-xl text-white hover:bg-opacity-10 transition-all duration-300 hover:transform hover:-translate-y-0.5"
-      >
-        <div className="w-5 h-5 rounded-full bg-red-500"></div>
-        Google
-      </button>
-      <button
-        type="button"
-        onClick={() => handleSocialLogin("microsoft")}
-        className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-white bg-opacity-5 border border-white border-opacity-10 rounded-xl text-white hover:bg-opacity-10 transition-all duration-300 hover:transform hover:-translate-y-0.5"
-      >
-        <div className="w-5 h-5 rounded-full bg-blue-500"></div>
-        Microsoft
-      </button>
+    <div className="flex flex-col items-center mb-6 w-full">
+      {/* This is the official Google Login button. 
+        When a user clicks it and signs in, it will call one of the functions we pass to it.
+      */}
+      <GoogleLogin
+        onSuccess={onGoogleSuccess}
+        onError={onGoogleError}
+        width="320px"
+        theme="filled_black"
+        text="continue_with"
+        shape="pill"
+      />
     </div>
   );
 };
 
 export default SocialLogin;
+

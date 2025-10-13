@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
   location: { type: String, default: '' },
   bio: { type: String, default: 'LMS learner passionate about acquiring new skills.' },
   avatar: { type: String, default: '' }, // URL to profile picture
+
+  // ✅ Forgot Password Fields
+  resetPasswordToken: { type: String },
+  resetPasswordExpire: { type: Date },
 }, { timestamps: true }); // Adds createdAt (joinDate) and updatedAt
 
 module.exports = mongoose.model('User', userSchema);

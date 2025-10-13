@@ -9,6 +9,8 @@ import AdminHome from "./pages/AdminHome";
 import CourseDetailPage from './pages/CourseDetailPage';
 import CoursePlayerPage from './pages/CoursePlayerPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage'; // ✅ Add this
+import ResetPasswordPage from './pages/ResetPasswordPage';   // ✅ Add this
  // 🆕 import this if you haven't
 
 function App() {
@@ -26,9 +28,13 @@ function App() {
         <Route path="/course-player/:courseId" element={<CoursePlayerPage />} />
         <Route path="/leaderboard/:courseId" element={<LeaderboardPage />} />
         <Route path="/quiz/:courseId" element={<QuizPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+      
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
