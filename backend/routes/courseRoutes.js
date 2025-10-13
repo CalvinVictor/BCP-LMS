@@ -1,7 +1,21 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const Course = require('../models/course');
 const { verifyToken, verifyInstructor } = require('../middleware/authMiddleware');
+
+// ✅ Configure multer for video uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/videos/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '_' + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
 
 // @route   POST /api/courses
 // @desc    Create a new course
@@ -65,28 +79,59 @@ router.put('/:id/publish', [verifyToken, verifyInstructor], async (req, res) => 
   }
 });
 
-// @route   POST /api/courses/:courseId/chapters  <- ✅ THIS LINE IS NOW CORRECT
-// @desc    Add a new chapter to a course
-router.post('/:courseId/chapters', [verifyToken, verifyInstructor], async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.courseId);
-    if (!course) return res.status(404).json({ message: "Course not found" });
-    if (course.instructor.toString() !== req.user.id) return res.status(403).json({ message: "Not authorized" });
+// @route   POST /api/courses/:courseId/chapters
+// @desc    Add a new chapter to a course with video and MCQs
+router.post('/:courseId/chapters', 
+  [verifyToken, verifyInstructor, upload.single('video')], 
+  async (req, res) => {
+    try {
+      const course = await Course.findById(req.params.courseId);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+      
+      if (course.instructor.toString() !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
 
-    const newChapter = req.body;
-    course.chapters.push(newChapter);
-    await course.save();
+      // ✅ Parse MCQs from JSON string
+      let mcqs = [];
+      if (req.body.mcqs) {
+        try {
+          mcqs = JSON.parse(req.body.mcqs);
+          console.log("Parsed MCQs:", mcqs); // Debug log
+        } catch (err) {
+          console.error("Error parsing MCQs:", err);
+          return res.status(400).json({ message: "Invalid MCQ format" });
+        }
+      }
 
-    res.status(201).json({ message: "Chapter added successfully", course });
-  } catch (err) {
-    console.error("Error adding chapter:", err);
-    res.status(500).json({ message: "Failed to add chapter" });
+      // ✅ Create new chapter with MCQs
+      const newChapter = {
+        title: req.body.title,
+        description: req.body.description,
+        videoURL: req.file ? `/uploads/videos/${req.file.filename}` : "",
+        materials: req.body.materials || [],
+        mcqs: mcqs // Include MCQs
+      };
+
+      course.chapters.push(newChapter);
+      await course.save();
+
+      res.status(201).json({ 
+        message: "Chapter added successfully", 
+        course 
+      });
+      
+    } catch (err) {
+      console.error("Error adding chapter:", err);
+      res.status(500).json({ 
+        message: "Failed to add chapter",
+        error: err.message 
+      });
+    }
   }
-});
-
-// in backend/routes/courseRoutes.js
-
-// ✅ REPLACE THE OLD /:courseId/quiz ROUTE WITH THIS NEW VERSION
+);
 
 // @route   GET /api/courses/:courseId/quiz
 // @desc    Get all MCQs for a course to build a quiz
@@ -100,10 +145,8 @@ router.get('/:courseId/quiz', async (req, res) => {
     let allQuestions = [];
     course.chapters.forEach(chapter => {
       if (chapter.mcqs && chapter.mcqs.length > 0) {
-        
-        // This .map() function reformats the data to match the frontend
         const formattedMcqs = chapter.mcqs.map(mcq => ({
-          questionText: mcq.question, // from 'question' to 'questionText'
+          questionText: mcq.question,
           options: mcq.options,
           correctAnswer: mcq.correctAnswer,
         }));
@@ -136,8 +179,8 @@ router.get('/highly-rated', async (req, res) => {
         status: 'Published', 
         rating: { $gte: 4.5 } 
     })
-    .sort({ rating: -1 }) // Sort by highest rating
-    .limit(4) // Limit to the top 4
+    .sort({ rating: -1 })
+    .limit(4)
     .populate('instructor', 'username');
 
     res.json(highlyRatedCourses);

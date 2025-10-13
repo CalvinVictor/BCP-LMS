@@ -9,15 +9,15 @@ const userSchema = new mongoose.Schema({
     enum: ['student', 'instructor', 'admin'],
     default: 'student',
   },
-  // --- NEW PROFILE FIELDS ---
   phone: { type: String, default: '' },
   location: { type: String, default: '' },
-  bio: { type: String, default: 'LMS learner passionate about acquiring new skills.' },
-  avatar: { type: String, default: '' }, // URL to profile picture
+  bio: { type: String, default: '' },
+  avatar: { type: String, default: '' },
 
-  // ✅ Forgot Password Fields
-  resetPasswordToken: { type: String },
-  resetPasswordExpire: { type: Date },
-}, { timestamps: true }); // Adds createdAt (joinDate) and updatedAt
+  // ✅ ADD THESE TWO FIELDS FOR PASSWORD RESET
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
+
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

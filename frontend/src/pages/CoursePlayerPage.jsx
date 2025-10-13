@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ReactPlayer from 'react-player'; 
 import apiService from '../services/apiService';
@@ -77,7 +77,7 @@ const CertificateModal = ({ courseTitle, studentName, onClose }) => (
 );
 
 // --- Video Player Component ---
-const VideoPlayer = ({ currentChapter }) => {
+const VideoPlayer = ({ currentChapter, onProgressUpdate, onVideoEnd }) => {
     if (!currentChapter || !currentChapter.videoURL) {
         return (
             <div className="flex items-center justify-center h-full text-gray-400">
@@ -87,17 +87,11 @@ const VideoPlayer = ({ currentChapter }) => {
     }
 
     const getVideoURL = (videoURL) => {
-        // Check if it's an external URL (YouTube, etc.)
         const isExternalURL = videoURL.includes('youtube.com') || 
                              videoURL.includes('youtu.be') ||
                              videoURL.startsWith('https://') ||
                              videoURL.startsWith('http://');
-        
-        if (isExternalURL) {
-            return videoURL;
-        }
-        
-        // For local files, handle the path correctly
+        if (isExternalURL) return videoURL;
         const cleanVideoURL = videoURL.startsWith('/') ? videoURL.substring(1) : videoURL;
         return `${VIDEO_BASE_URL}/${cleanVideoURL}`;
     };
@@ -105,35 +99,30 @@ const VideoPlayer = ({ currentChapter }) => {
     const videoURL = getVideoURL(currentChapter.videoURL);
     const isYouTube = videoURL.includes('youtube.com') || videoURL.includes('youtu.be');
 
-    console.log('Video URL:', videoURL);
-    console.log('Is YouTube:', isYouTube);
-
     if (isYouTube) {
-        // Use ReactPlayer for YouTube videos
         return (
             <ReactPlayer
                 url={videoURL}
                 width="100%"
                 height="100%"
-                controls={true}
-                onError={(error) => console.error('ReactPlayer Error:', error)}
-                onReady={() => console.log('ReactPlayer ready')}
+                controls
+                onProgress={({ played }) => onProgressUpdate(played)}
+                onEnded={onVideoEnd}
             />
         );
     } else {
-        // Use HTML5 video for local files
         return (
-            <video 
-                width="100%" 
-                height="100%" 
+            <video
+                width="100%"
+                height="100%"
                 controls
                 src={videoURL}
-                onError={(e) => {
-                    console.error('Video error:', e);
-                    console.error('Failed to load video from:', videoURL);
+                onTimeUpdate={(e) => {
+                    const video = e.target;
+                    const playedPercent = video.currentTime / video.duration;
+                    onProgressUpdate(playedPercent);
                 }}
-                onLoadStart={() => console.log('Video loading started')}
-                onCanPlay={() => console.log('Video can play')}
+                onEnded={onVideoEnd}
                 style={{ objectFit: 'contain' }}
             >
                 Your browser does not support the video tag.
@@ -141,6 +130,7 @@ const VideoPlayer = ({ currentChapter }) => {
         );
     }
 };
+
 
 // --- Main Course Player Page Component ---
 const CoursePlayerPage = () => {
@@ -153,6 +143,7 @@ const CoursePlayerPage = () => {
     const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
     const [showQuizModal, setShowQuizModal] = useState(false);
     const [showCertificate, setShowCertificate] = useState(false);
+    const [chapterProgress, setChapterProgress] = useState(0);
     const studentName = localStorage.getItem('username');
 
     useEffect(() => {
@@ -170,6 +161,24 @@ const CoursePlayerPage = () => {
         fetchLearningData();
     }, [courseId]);
 
+    const handleChapterProgress = async (progress) => {
+        setChapterProgress(progress * 100);
+        // If chapter completed 95%+, mark as complete
+        if (progress >= 0.95) {
+            const currentChapter = course.chapters[currentChapterIndex];
+            if (!enrollment.completedChapters.includes(currentChapter._id)) {
+                try {
+                    const { enrollment: updatedEnrollment } = await apiService.markChapterAsComplete(courseId, currentChapter._id);
+                    setEnrollment(updatedEnrollment);
+                } catch (err) {
+                    console.error("Failed to mark chapter complete:", err);
+                }
+            }
+        }
+    };
+
+    const handleVideoEnd = () => handleChapterProgress(1);
+
     const handleQuizComplete = async (passed) => {
         setShowQuizModal(false);
         if (passed) {
@@ -177,7 +186,6 @@ const CoursePlayerPage = () => {
             try {
                 const { enrollment: updatedEnrollment } = await apiService.markChapterAsComplete(courseId, currentChapter._id);
                 setEnrollment(updatedEnrollment);
-
                 if (currentChapterIndex === course.chapters.length - 1) {
                     await apiService.markCourseAsComplete(courseId);
                     setEnrollment(prev => ({ ...prev, progress: 100 }));
@@ -196,6 +204,8 @@ const CoursePlayerPage = () => {
     }
 
     const currentChapter = course.chapters[currentChapterIndex];
+    const lastChapterIndex = course.chapters.length - 1;
+    const lastChapterCompleted = enrollment.completedChapters.includes(course.chapters[lastChapterIndex]._id);
 
     return (
         <Layout>
@@ -206,7 +216,7 @@ const CoursePlayerPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <div className="lg:col-span-3">
                         <div className="aspect-video bg-black rounded-xl mb-6 overflow-hidden">
-                            <VideoPlayer currentChapter={currentChapter} />
+                            <VideoPlayer currentChapter={currentChapter} onProgressUpdate={handleChapterProgress} onVideoEnd={handleVideoEnd} />
                         </div>
 
                         <h1 className="text-3xl font-bold mb-2">{currentChapter.title}</h1>
@@ -214,7 +224,8 @@ const CoursePlayerPage = () => {
                         
                         <button 
                             onClick={() => navigate(`/test/${courseId}`)}
-                            className="bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold flex items-center gap-2 transition-all duration-300 hover:bg-purple-700"
+                            disabled={!lastChapterCompleted}
+                            className={`bg-purple-600 text-white py-3 px-6 rounded-lg font-semibold flex items-center gap-2 transition-all duration-300 hover:bg-purple-700 ${!lastChapterCompleted ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             <HelpCircle/>
                             Take Quiz

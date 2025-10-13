@@ -117,29 +117,51 @@ function InstructorDashboard() {
     setShowAddChapterModal(true);
   };
 
-  const handleAddChapter = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("title", newChapter.title);
-      formData.append("description", newChapter.description);
-      if (newChapter.videoFile) {
-        formData.append("video", newChapter.videoFile);
-      }
-      await apiService.addChapter(selectedCourseId, formData);
-      await fetchCourses();
-      alert("✅ Chapter added successfully!");
-      setShowAddChapterModal(false);
-      setNewChapter({
-        title: "",
-        description: "",
-        videoFile: null,
-        materials: [""],
-        mcqs: [{ question: "", options: ["", "", "", ""], correctAnswer: "" }],
-      });
-    } catch (err) {
-      alert("❌ Failed to add chapter.");
+// ✅ REPLACE your handleAddChapter function with this:
+
+const handleAddChapter = async () => {
+  try {
+    // Validate that MCQs have content before submitting
+    const validMcqs = newChapter.mcqs.filter(mcq => 
+      mcq.question.trim() !== "" && 
+      mcq.options.some(opt => opt.trim() !== "") &&
+      mcq.correctAnswer.trim() !== ""
+    );
+
+      console.log("🔍 Valid MCQs to send:", validMcqs);
+
+    const formData = new FormData();
+    formData.append("title", newChapter.title);
+    formData.append("description", newChapter.description);
+    
+    if (newChapter.videoFile) {
+      formData.append("video", newChapter.videoFile);
     }
-  };
+
+    // ✅ ADD MCQs to FormData as JSON string (only valid ones)
+    if (validMcqs.length > 0) {
+      formData.append("mcqs", JSON.stringify(validMcqs));
+      console.log("✅ MCQs appended to FormData"); // 👈 ADD THIS
+    } else {
+      console.log("⚠️ No valid MCQs to send"); // 👈 ADD THIS
+    }
+
+    await apiService.addChapter(selectedCourseId, formData);
+    await fetchCourses();
+    alert("✅ Chapter added successfully!");
+    setShowAddChapterModal(false);
+    setNewChapter({
+      title: "",
+      description: "",
+      videoFile: null,
+      materials: [""],
+      mcqs: [{ question: "", options: ["", "", "", ""], correctAnswer: "" }],
+    });
+  } catch (err) {
+    console.error("Error adding chapter:", err);
+    alert("❌ Failed to add chapter: " + (err.response?.data?.message || err.message));
+  }
+};
 
   const handleMCQChange = (index, field, value) => {
     const updatedMCQs = [...newChapter.mcqs];

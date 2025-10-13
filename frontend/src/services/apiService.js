@@ -3,33 +3,21 @@ import axios from "axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-
 const api = axios.create({
   baseURL: API_BASE_URL,
 });
-// Delete a chapter
-async function deleteChapter(courseId, chapterId) {
-  try {
-    const res = await api.delete(`/instructor/${courseId}/chapters/${chapterId}`);
-    return res.data;
-  } catch (err) {
-    console.error("Error deleting chapter:", err.response?.data || err.message);
-    throw err;
-  }
-}
 
-
+// --- Attach Token Automatically ---
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
 );
 
+// --- Global Error Handler ---
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -40,8 +28,9 @@ api.interceptors.response.use(
   }
 );
 
+// ✅ Combine both axios & fetch-based routes
 export default {
-  // --- Auth Routes ---
+  // --- AUTH ROUTES ---
   login: async (credentials) => {
     const { data } = await api.post("/auth/login", credentials);
     return data;
@@ -50,8 +39,20 @@ export default {
     const { data } = await api.post("/auth/register", formData);
     return data;
   },
+  googleLogin: async (payload) => {
+    const { data } = await api.post("/auth/google", payload);
+    return data;
+  },
+  forgotPassword: async (email) => {
+    const { data } = await api.post("/auth/forgot-password", { email });
+    return data;
+  },
+  resetPassword: async (token, password) => {
+    const { data } = await api.post(`/auth/reset-password/${token}`, { password });
+    return data;
+  },
 
-  // --- Instructor Routes ---
+  // --- INSTRUCTOR ROUTES ---
   fetchInstructorCourses: async () => {
     const { data } = await api.get("/instructor/my-courses");
     return data;
@@ -64,110 +65,142 @@ export default {
     const { data } = await api.get("/instructor/stats");
     return data;
   },
+  getInstructorProfileStats: async () => {
+    const { data } = await api.get("/instructor/profile-stats");
+    return data;
+  },
+
+  // ✅ FETCH-BASED (keep original form for compatibility)
+ // --- Add Chapter with video + MCQs ---
 addChapter: async (courseId, formData) => {
-  const res = await fetch(`${API_BASE_URL}/instructor/${courseId}/add-chapter`, {
+  const res = await fetch(`${API_BASE_URL}/courses/${courseId}/chapters`, { // ✅ URL matches backend
     method: "POST",
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
+      // ✅ Do NOT set 'Content-Type', let browser handle multipart/form-data
     },
-    body: formData, // ✅ don't stringify
+    body: formData,
   });
-  if (!res.ok) throw new Error("Failed to add chapter");
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Failed to add chapter");
+  }
+
   return await res.json();
 },
-  deleteChapter, 
+
+
+  // --- DELETE CHAPTER (axios-based) ---
+  deleteChapter: async (courseId, chapterId) => {
+    try {
+      const res = await api.delete(`/instructor/${courseId}/chapters/${chapterId}`);
+      return res.data;
+    } catch (err) {
+      console.error("Error deleting chapter:", err.response?.data || err.message);
+      throw err;
+    }
+  },
 
   publishCourse: async (courseId) => {
     const { data } = await api.put(`/courses/${courseId}/publish`);
     return data;
   },
 
-  // --- User Profile Routes ---
+  // --- USER PROFILE & STATS ROUTES ---
   getUserProfile: async () => {
-    const { data } = await api.get('/users/profile');
+    const { data } = await api.get("/users/profile");
     return data;
   },
   updateUserProfile: async (profileData) => {
-    const { data } = await api.put('/users/profile', profileData);
+    const { data } = await api.put("/users/profile", profileData);
     return data;
   },
   getMyCompletedCourses: async () => {
-    const { data } = await api.get('/users/my-completed-courses');
+    const { data } = await api.get("/users/my-completed-courses");
+    return data;
+  },
+  getHomeStats: async () => {
+    const { data } = await api.get("/users/home-stats");
+    return data;
+  },
+  getUserHomeStats: async () => {
+    const { data } = await api.get("/users/home-stats");
     return data;
   },
 
-  // --- Public/Student Routes ---
+  // --- PUBLIC / STUDENT ROUTES ---
   fetchPublishedCourses: async () => {
     const { data } = await api.get("/courses");
     return data;
   },
-  
-  // ✅ THIS IS THE MISSING FUNCTION THAT FIXES THE BUG
+  fetchHighlyRatedCourses: async () => {
+    const { data } = await api.get("/courses/highly-rated");
+    return data;
+  },
   getCourseById: async (courseId) => {
     const { data } = await api.get(`/courses/${courseId}`);
     return data;
   },
-// --- Enrollment Routes ---
-enrollInCourse: async (courseId) => {
-  const { data } = await api.post('/enrollments/enroll', { courseId });
-  return data;
-},
 
-getMyEnrolledCourses: async () => {
-  const { data } = await api.get('/enrollments/my-courses');
-  return data;
-},
-
-getEnrollmentStatus: async (courseId) => {
-  const { data } = await api.get(`/enrollments/status/${courseId}`);
-  return data;
-},
-
-// --- Learning Routes ---
-getCourseForLearning: async (courseId) => {
-  const { data } = await api.get(`/learning/course/${courseId}`);
-  return data;
-},
-
-markChapterAsComplete: async (courseId, chapterId) => {
-  const { data } = await api.post('/learning/progress/complete-chapter', { courseId, chapterId });
-  return data;
-},
-
-// --- Learning Routes ---
-markCourseAsComplete: async (courseId) => {
-  const { data } = await api.post('/learning/progress/complete-course', { courseId });
-  return data;
-},
-//--- quiz page da---
-getQuizForCourse: async (courseId) => {
-    const { data } = await api.get(`/courses/${courseId}/quiz`);
+  // --- ENROLLMENT ROUTES ---
+  enrollInCourse: async (courseId) => {
+    const { data } = await api.post("/enrollments/enroll", { courseId });
+    return data;
+  },
+  getMyEnrolledCourses: async () => {
+    const { data } = await api.get("/enrollments/my-courses");
+    return data;
+  },
+  getEnrollmentStatus: async (courseId) => {
+    const { data } = await api.get(`/enrollments/status/${courseId}`);
     return data;
   },
 
-   submitTestResult: async (courseId, resultData) => {
-  // 'resultData' is the object { score: 1200, timeTaken: 7 }
-  // We pass it directly to the backe
-  const { data } = await api.post(`/leaderboard/submit/${courseId}`, resultData);
-  return data;
-},
-  
- getLeaderboard: async (courseId) => {
+  // --- LEARNING ROUTES ---
+  getCourseForLearning: async (courseId) => {
+    const { data } = await api.get(`/learning/course/${courseId}`);
+    return data;
+  },
+  markChapterAsComplete: async (courseId, chapterId) => {
+    const { data } = await api.post("/learning/progress/complete-chapter", {
+      courseId,
+      chapterId,
+    });
+    return data;
+  },
+  markCourseAsComplete: async (courseId) => {
+    const { data } = await api.post("/learning/progress/complete-course", { courseId });
+    return data;
+  },
+
+  // --- QUIZ & LEADERBOARD ROUTES ---
+  getQuizForCourse: async (courseId) => {
+    // two possible endpoints in your versions, keeping /courses/:id/quiz as default
+    try {
+      const { data } = await api.get(`/courses/${courseId}/quiz`);
+      return data;
+    } catch {
+      const { data } = await api.get(`/quizzes/course/${courseId}`);
+      return data;
+    }
+  },
+  completeQuizAndGenerateCertificate: async (courseId, score) => {
+    const { data } = await api.post(`/quizzes/course/${courseId}/complete`, { score });
+    return data;
+  },
+  submitTestResult: async (courseId, resultData) => {
+    const { data } = await api.post(`/leaderboard/submit/${courseId}`, resultData);
+    return data;
+  },
+  getLeaderboard: async (courseId) => {
     const { data } = await api.get(`/leaderboard/${courseId}`);
     return data;
- }, 
-
- // --- New Function for Home Page Stats ---
-getUserHomeStats: async () => {
-  const { data } = await api.get('/users/home-stats');
-  return data;
-},
-
-  getHomeStats: async () => {
-    const { data } = await api.get('/users/home-stats');
-    return data;
   },
 
-  
-
+  // --- CERTIFICATE ROUTES ---
+  verifyCertificate: async (uniqueCode) => {
+    const { data } = await api.get(`/certificates/verify/${uniqueCode}`);
+    return data;
+  },
 };
