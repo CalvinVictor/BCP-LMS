@@ -194,8 +194,9 @@ const restartQuiz = () => {
 
     if (quizState === 'finished') {
       // Logic to check if the current user is in the top 3
-      const userId = localStorage.getItem("userId"); // You need to get this from localStorage or context
-      const userInTop3 = leaderboard?.some(entry => entry.student._id === userId);
+      const userId = localStorage.getItem("userId");
+      // ✅ FIXED: Added '?' to safely access ._id
+      const userInTop3 = leaderboard?.some(entry => entry.student?._id === userId); 
 
       return (
         <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">

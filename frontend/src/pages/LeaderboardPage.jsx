@@ -12,12 +12,12 @@ const LeaderboardPage = () => {
     const [courseTitle, setCourseTitle] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [currentUser , setCurrentUser ] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
 
-    const fetchCurrentUser  = async () => {
+    const fetchCurrentUser = async () => {
         try {
-            const data = await apiService.getCurrentUser ();
-            setCurrentUser (data);
+            const data = await apiService.getCurrentUser();
+            setCurrentUser(data);
         } catch (err) {
             console.error("⚠️ Failed to fetch current user:", err);
         }
@@ -29,7 +29,7 @@ const LeaderboardPage = () => {
             setError(null);
             const data = await apiService.getLeaderboard(courseId);
             setLeaderboard(data || []);
-            setCourseTitle("Course Leaderboard");
+            setCourseTitle("Course Leaderboard"); // You might want to get this from the API too
         } catch (error) {
             setError("Failed to load leaderboard. Please try again.");
         } finally {
@@ -39,12 +39,15 @@ const LeaderboardPage = () => {
 
     useEffect(() => {
         fetchLeaderboard();
-        fetchCurrentUser ();
+        fetchCurrentUser();
     }, [courseId]);
 
     const handleRefresh = () => {
         fetchLeaderboard();
     };
+
+    // ✅ Create a new list containing only entries with valid student data
+    const validLeaderboard = leaderboard.filter(entry => entry.student);
 
     return (
         <Layout>
@@ -86,22 +89,25 @@ const LeaderboardPage = () => {
                                 Try Again
                             </button>
                         </div>
-                    ) : leaderboard.length === 0 ? (
+                     // ✅ Use validLeaderboard here
+                    ) : validLeaderboard.length === 0 ? (
                         <div className="text-center py-12 text-purple-400">
                             <Award className="w-20 h-20 mx-auto mb-6 opacity-60 drop-shadow-lg" />
-                            <p className="text-2xl mb-3 font-semibold">No scores yet!!</p>
-                            <p className="text-lg">Be the first to complete the quiz and claim the top spot!!</p>
+                            <p className="text-2xl mb-3 font-semibold">No scores yet!</p>
+                            <p className="text-lg">Be the first to complete the quiz and claim the top spot!</p>
                         </div>
                     ) : (
                         <div className="space-y-6 max-h-[480px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-900">
                             {/* Top 3 Podium Section */}
-                            {leaderboard.length > 0 && (
+                             {/* ✅ Use validLeaderboard here */}
+                            {validLeaderboard.length > 0 && (
                                 <div className="mb-8">
                                     <h4 className="text-xl font-bold mb-5 text-yellow-400 tracking-wide flex items-center space-x-3">
                                         <span>🏆</span>
                                         <span>Top 3 Champions</span>
                                     </h4>
-                                    {leaderboard.slice(0, 3).map((entry, index) => {
+                                     {/* ✅ Use validLeaderboard here */}
+                                    {validLeaderboard.slice(0, 3).map((entry, index) => {
                                         const rankStyles = [
                                             { medal: '🥇', bg: 'bg-gradient-to-r from-yellow-400 to-yellow-500', text: 'text-gray-900', shadow: 'shadow-yellow-400/60' },
                                             { medal: '🥈', bg: 'bg-gradient-to-r from-gray-300 to-gray-400', text: 'text-gray-900', shadow: 'shadow-gray-400/60' },
@@ -109,14 +115,14 @@ const LeaderboardPage = () => {
                                         ];
                                         const style = rankStyles[index];
 
-                                        const isCurrentUser  =
-                                            currentUser  && (currentUser ._id === entry.student?._id || currentUser ._id === entry.userId);
+                                        const isCurrentUser =
+                                            currentUser && (currentUser._id === entry.student?._id || currentUser._id === entry.userId);
 
                                         return (
                                             <div
                                                 key={`top-${entry._id || index}`}
                                                 className={`flex justify-between items-center p-5 mb-4 rounded-2xl shadow-2xl ${style.bg} ${style.text} ${style.shadow} transition-transform transform hover:scale-[1.04] hover:shadow-[0_10px_20px_rgba(0,0,0,0.3)] perspective-1000 ${
-                                                    isCurrentUser  ? 'ring-4 ring-purple-400 ring-opacity-80' : ''
+                                                    isCurrentUser ? 'ring-4 ring-purple-400 ring-opacity-80' : ''
                                                 }`}
                                                 style={{ transformStyle: 'preserve-3d' }}
                                             >
@@ -127,9 +133,10 @@ const LeaderboardPage = () => {
                                                     </div>
                                                     <div>
                                                         <div className="font-extrabold text-2xl tracking-wide">
+                                                          {/* This fallback is now just a safety measure */}
                                                             {entry.student?.username || entry.student?.name || 'Unknown User'}
                                                         </div>
-                                                        {isCurrentUser  && (
+                                                        {isCurrentUser && (
                                                             <div className="text-sm font-semibold bg-purple-600 text-white px-3 py-1 rounded-full inline-block mt-1 select-none shadow-md">
                                                                 You
                                                             </div>
@@ -153,7 +160,7 @@ const LeaderboardPage = () => {
                                                         courseName={courseTitle}
                                                         rank={index + 1}
                                                         score={entry.score}
-                                                        className={isCurrentUser  ? 'current-user' : ''}
+                                                        className={isCurrentUser ? 'current-user' : ''}
                                                     />
                                                 </div>
                                             </div>
@@ -163,22 +170,24 @@ const LeaderboardPage = () => {
                             )}
 
                             {/* All Other Participants (4th place and below) */}
-                            {leaderboard.length > 3 && (
+                            {/* ✅ Use validLeaderboard here */}
+                            {validLeaderboard.length > 3 && (
                                 <div>
                                     <h4 className="text-xl font-semibold mb-5 text-purple-300 tracking-wide flex items-center space-x-3">
                                         <span>📊</span>
                                         <span>Other Participants</span>
                                     </h4>
-                                    {leaderboard.slice(3).map((entry, index) => {
+                                     {/* ✅ Use validLeaderboard here */}
+                                    {validLeaderboard.slice(3).map((entry, index) => {
                                         const actualIndex = index + 3;
-                                        const isCurrentUser  =
-                                            currentUser  && (currentUser ._id === entry.student?._id || currentUser ._id === entry.userId);
+                                        const isCurrentUser =
+                                            currentUser && (currentUser._id === entry.student?._id || currentUser._id === entry.userId);
 
                                         return (
                                             <div
                                                 key={`other-${entry._id || actualIndex}`}
                                                 className={`flex justify-between items-center p-4 mb-3 rounded-xl bg-purple-800 bg-opacity-80 text-white shadow-md transition-colors hover:bg-purple-700 ${
-                                                    isCurrentUser  ? 'ring-2 ring-purple-400' : ''
+                                                    isCurrentUser ? 'ring-2 ring-purple-400' : ''
                                                 }`}
                                             >
                                                 <div className="flex items-center space-x-4 select-none">
@@ -186,7 +195,7 @@ const LeaderboardPage = () => {
                                                     <div>
                                                         <div className="font-semibold tracking-wide">
                                                             {entry.student?.username || entry.student?.name || 'Unknown User'}
-                                                            {isCurrentUser  && (
+                                                            {isCurrentUser && (
                                                                 <span className="ml-3 text-xs bg-purple-600 text-white px-3 py-1 rounded-full select-none shadow-sm">
                                                                     You
                                                                 </span>

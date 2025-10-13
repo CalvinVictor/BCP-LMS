@@ -56,6 +56,14 @@ const generateCertificate = async (req, res) => {
       userName = user?.username || user?.name || 'Student';
     }
 
+    // --- FIX START ---
+    // Fetch the course to get its name
+    const course = await Course.findById(courseId).select('title');
+    if (!course) {
+      return res.status(404).json({ message: 'Course not found' });
+    }
+    // --- FIX END ---
+
     // Generate unique certificate ID
     const timestamp = Date.now();
     const userIdSuffix = userId.slice(-4);
@@ -66,6 +74,7 @@ const generateCertificate = async (req, res) => {
     // Prepare certificate data
     const certificateData = {
       userName: userName,
+      courseName: course.title, // <-- ADDED COURSE NAME
       courseId: courseId,
       rank: rank,
       score: score,
@@ -97,7 +106,7 @@ const generateCertificate = async (req, res) => {
         certificateId,
         userId,
         userName,
-        courseName: certificateData.courseName || 'Course',
+        courseName: course.title, // Use the fetched course title
         rank,
         score,
         issuedDate: certificateData.issuedDate,
@@ -125,10 +134,9 @@ const downloadCertificate = async (req, res) => {
     const { certificateId } = req.params;
     console.log('📥 Download request for certificate:', certificateId);
     
-    // Find the certificate file
-    const certificatesDir = path.join(__dirname, '../uploads/certificates');
+    // The filename now includes the full certificate ID
     const filename = `certificate_${certificateId}.pdf`;
-    const filepath = path.join(certificatesDir, filename);
+    const filepath = path.join(__dirname, '../uploads/certificates', filename);
     
     console.log('🔍 Looking for file at:', filepath);
     
@@ -143,7 +151,7 @@ const downloadCertificate = async (req, res) => {
     
     console.log('✅ Certificate file found, sending...');
     
-    // Set headers for PDF
+    // Set headers for PDF to open in browser
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
     
@@ -184,10 +192,19 @@ const getCertificateStatus = async (req, res) => {
     const leaderboard = await TestResult.find({ course: courseId })
       .sort({ score: -1, createdAt: 1 })
       .populate('student', 'username name');
+    
+    const validLeaderboard = leaderboard.filter(entry => entry.student);
 
-    const userIndex = leaderboard.findIndex(entry => 
+    const userIndex = validLeaderboard.findIndex(entry => 
       entry.student._id.toString() === userId
     );
+
+    if (userIndex === -1) {
+       return res.status(404).json({
+          message: 'User not found in leaderboard rankings.',
+          eligible: false
+       });
+    }
 
     const rank = userIndex + 1;
     const eligible = rank <= 3; // Only top 3 are eligible
@@ -196,7 +213,7 @@ const getCertificateStatus = async (req, res) => {
       eligible,
       rank,
       score: testResult.score,
-      totalParticipants: leaderboard.length,
+      totalParticipants: validLeaderboard.length,
       courseName: testResult.course?.title || testResult.course?.name || 'Course',
       userName: testResult.student?.username || testResult.student?.name || 'Student'
     });
