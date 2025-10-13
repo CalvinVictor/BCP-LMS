@@ -19,8 +19,7 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
   const [isMyLearningOpen, setIsMyLearningOpen] = useState(false);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const myLearningRef = useRef(null);
-
-  // ✅ FIX: Get the user's role from localStorage
+  
   const role = localStorage.getItem('role');
 
   const getHomePath = () => {
@@ -72,7 +71,7 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
           <Link to={getHomePath()} className="flex items-center space-x-3">
             <SjuLogo />
             <h1 className="text-2xl font-bold text-white tracking-wide">
-              St. Joseph's University
+             Course Hub
             </h1>
           </Link>
 
@@ -91,40 +90,42 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
               </div>
             )}
 
-            {/* ✅ FIX: Conditionally render the profile link. It will only show if the role is NOT 'instructor'. */}
             {role !== 'instructor' && (
               <Link to="/profile" className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors px-3 py-2 rounded-lg">
                 <User size={18} /><span>Profile</span>
               </Link>
             )}
             
-            <div className="relative" ref={myLearningRef}>
-                <button 
-                    onClick={() => setIsMyLearningOpen(!isMyLearningOpen)}
-                    className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors px-3 py-2 rounded-lg"
-                >
-                    <GraduationCap size={18} /><span>My Learning</span>
-                </button>
-                {isMyLearningOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-slate-800 border border-slate-700 rounded-lg shadow-lg animate-fade-in-down py-2">
-                        {enrolledCourses.length > 0 ? (
-                            enrolledCourses.map(course => (
-                                <Link
-                                    key={course._id}
-                                    to={`/course-player/${course._id}`}
-                                    onClick={() => setIsMyLearningOpen(false)}
-                                    className="flex items-center px-4 py-3 text-sm text-slate-300 hover:bg-slate-700"
-                                >
-                                    <img src={course.thumbnail || 'https://placehold.co/40x40'} alt={course.title} className="w-10 h-10 rounded-md object-cover mr-3"/>
-                                    <span className="font-semibold">{course.title}</span>
-                                </Link>
-                            ))
-                        ) : (
-                            <div className="px-4 py-3 text-sm text-slate-400">You are not enrolled in any courses.</div>
-                        )}
-                    </div>
-                )}
-            </div>
+            {/* ✅ FIX: Conditionally render the "My Learning" dropdown */}
+            {role !== 'instructor' && (
+              <div className="relative" ref={myLearningRef}>
+                  <button 
+                      onClick={() => setIsMyLearningOpen(!isMyLearningOpen)}
+                      className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors px-3 py-2 rounded-lg"
+                  >
+                      <GraduationCap size={18} /><span>My Learning</span>
+                  </button>
+                  {isMyLearningOpen && (
+                      <div className="absolute right-0 mt-2 w-72 bg-slate-800 border border-slate-700 rounded-lg shadow-lg animate-fade-in-down py-2">
+                          {enrolledCourses.length > 0 ? (
+                              enrolledCourses.map(course => (
+                                  <Link
+                                      key={course._id}
+                                      to={`/course-player/${course._id}`}
+                                      onClick={() => setIsMyLearningOpen(false)}
+                                      className="flex items-center px-4 py-3 text-sm text-slate-300 hover:bg-slate-700"
+                                  >
+                                      <img src={course.thumbnail || 'https://placehold.co/40x40'} alt={course.title} className="w-10 h-10 rounded-md object-cover mr-3"/>
+                                      <span className="font-semibold">{course.title}</span>
+                                  </Link>
+                              ))
+                          ) : (
+                              <div className="px-4 py-3 text-sm text-slate-400">You are not enrolled in any courses.</div>
+                          )}
+                      </div>
+                  )}
+              </div>
+            )}
 
             <button onClick={handleLogout} className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
               <LogOut size={16} /><span>Logout</span>
@@ -155,16 +156,19 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
               </div>
             )}
           
-          {/* ✅ FIX: Add the same condition here for the mobile view */}
           {role !== 'instructor' && (
             <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-3 text-slate-200 hover:bg-slate-700/50 block px-3 py-2 rounded-md text-base font-medium">
               <User size={20} /><span>Profile</span>
             </Link>
           )}
 
-          <Link to="/my-learning" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-3 text-slate-200 hover:bg-slate-700/50 block px-3 py-2 rounded-md text-base font-medium">
-            <GraduationCap size={20} /><span>My Learning</span>
-          </Link>
+          {/* ✅ FIX: Conditionally render the "My Learning" link for the mobile view */}
+          {role !== 'instructor' && (
+            <Link to="/my-learning" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-3 text-slate-200 hover:bg-slate-700/50 block px-3 py-2 rounded-md text-base font-medium">
+              <GraduationCap size={20} /><span>My Learning</span>
+            </Link>
+          )}
+
           <button onClick={handleLogout} className="w-full flex items-center justify-center space-x-3 bg-purple-600 text-white px-3 py-3 rounded-md text-base font-medium">
             <LogOut size={18} /><span>Logout</span>
           </button>

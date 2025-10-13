@@ -72,15 +72,7 @@ const AuthForm = ({
 
         {isLogin && (
           <div className="text-center">
-            <button
-              type="button"
-              onClick={() =>
-                showMessage("Password reset email would be sent", "success")
-              }
-              className="text-indigo-400 hover:text-indigo-300 text-sm font-medium"
-            >
-              Forgot your password?
-            </button>
+           
           </div>
         )}
 

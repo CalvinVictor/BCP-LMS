@@ -140,7 +140,7 @@ const LoginPage = () => {
           <div className="bg-white bg-opacity-5 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white border-opacity-10">
             <div className="text-center mb-8">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent mb-2">
-                SJU Courses
+                Course Hub
               </h1>
               <h2 className="text-2xl font-semibold text-white mb-2">
                 {isLogin ? "Welcome Back" : "Create Account"}

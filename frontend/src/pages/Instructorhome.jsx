@@ -209,21 +209,8 @@ const handleAddChapter = async () => {
                   {instructorCourses.reduce((acc, c) => acc + c.students, 0)} Students
                 </span>
               </div>
-              <div className="flex items-center">
-                <Award className="w-4 h-4 mr-1" />
-                <span>
-                  {instructorCourses.length > 0
-                    ? (
-                        instructorCourses.reduce((acc, c) => acc + c.rating, 0) /
-                        instructorCourses.length
-                      ).toFixed(1)
-                    : 0} ⭐ Avg Rating
-                </span>
-              </div>
-              <div className="flex items-center">
-                <BarChart3 className="w-4 h-4 mr-1" />
-                <span>$12,450 This Month</span>
-              </div>
+              
+              
             </div>
           </div>
           <button
