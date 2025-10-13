@@ -148,7 +148,9 @@ const LoginPage = () => {
             </div>
 
             <RoleToggle role={role} setRole={setRole} />
-            <SocialLogin onGoogleSuccess={handleGoogleSuccess} onGoogleError={handleGoogleError} />
+{role === "student" && (
+  <SocialLogin onGoogleSuccess={handleGoogleSuccess} onGoogleError={handleGoogleError} />
+)}
 
             <div className="relative text-center text-gray-400 text-sm mb-6">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white border-opacity-10"></div></div>

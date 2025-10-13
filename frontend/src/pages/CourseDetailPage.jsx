@@ -134,7 +134,7 @@ const CourseDetailPage = () => {
             <div className="lg:col-span-1">
                 <div className="bg-gray-800 rounded-xl overflow-hidden border border-gray-700 sticky top-24 mb-8">
                     <div className="p-6">
-                        <div className="text-4xl font-bold mb-4">${course.price || 'Free'}</div>
+                        <div className="text-4xl font-bold mb-4">{course.price || 'Free'}</div>
                         
                         {isEnrolled ? (
                             <button 

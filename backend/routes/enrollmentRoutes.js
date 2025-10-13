@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Enrollment = require('../models/enrollment');
 const Course = require('../models/course');
-const { verifyToken } = require('../middleware/authMiddleware'); // Any logged-in user can be a student
+const { verifyToken } = require('../middleware/authMiddleware');
 
 // @route   POST /api/enrollments/enroll
 // @desc    Enroll the logged-in student in a course
@@ -28,18 +28,8 @@ router.post('/enroll', verifyToken, async (req, res) => {
 });
 
 // @route   GET /api/enrollments/my-courses
-// @desc    Get all courses a student is enrolled in
-router.get('/my-courses', verifyToken, async (req, res) => {
-    try {
-        const enrollments = await Enrollment.find({ student: req.user.id }).populate('course');
-        const courses = enrollments.map(e => e.course); // Return just the course objects
-        res.json(courses);
-    } catch (err) {
-        res.status(500).json({ message: 'Server Error fetching courses.' });
-    }
-});
-
-// @route   GET /api/enrollments/status/:courseId
+// @desc    Get all courses a student is enrolled in, with full details
+// @access  Private
 router.get('/my-courses', verifyToken, async (req, res) => {
     try {
         const enrollments = await Enrollment.find({ student: req.user.id })
@@ -57,7 +47,7 @@ router.get('/my-courses', verifyToken, async (req, res) => {
             return res.json([]); // Always return an array, even if it's empty
         }
 
-        // Extract just the course data from the enrollment objects
+        // Extract just the course data from the enrollment objects, filtering out any null courses
         const courses = enrollments.map(enrollment => enrollment.course).filter(course => course != null);
         
         res.json(courses);
@@ -67,6 +57,7 @@ router.get('/my-courses', verifyToken, async (req, res) => {
     }
 });
 
+// @route   GET /api/enrollments/status/:courseId
 // @desc    Check if the current user is enrolled in a specific course
 router.get('/status/:courseId', verifyToken, async (req, res) => {
     try {
@@ -85,4 +76,4 @@ router.get('/status/:courseId', verifyToken, async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = router;

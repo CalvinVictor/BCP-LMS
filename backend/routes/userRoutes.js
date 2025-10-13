@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/user');
 const Enrollment = require('../models/enrollment');
 const { verifyToken } = require('../middleware/authMiddleware');
+const Certificate = require('../models/certificate');
 
 // @route   GET /api/users/profile
 // @desc    Get the complete profile of the currently logged-in user
@@ -105,5 +106,25 @@ router.get('/home-stats', verifyToken, async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
+router.get('/home-stats', verifyToken, async (req, res) => {
+  try {
+    const coursesInProgress = await Enrollment.countDocuments({ 
+      student: req.user.id, 
+      progress: { $lt: 100 } 
+    });
+
+    const certificatesEarned = await Enrollment.countDocuments({ 
+      student: req.user.id, 
+      progress: 100 
+    });
+
+    res.json({ coursesInProgress, certificatesEarned });
+  } catch (err) {
+    console.error("Error fetching home stats:", err);
+    res.status(500).send('Server Error');
+  }
+});
+
 
 module.exports = router;
