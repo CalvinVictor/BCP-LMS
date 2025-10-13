@@ -282,9 +282,7 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-400 hover:text-white transition-colors">
-                <Bell size={20} />
-              </button>
+              
               <button 
                 onClick={handleLogout}
                 className="flex items-center space-x-2 px-4 py-2 bg-red-500 bg-opacity-20 hover:bg-opacity-30 rounded-lg text-white transition-colors"
@@ -374,9 +372,9 @@ const AdminDashboard = () => {
                       onChange={(e) => setUserFilter(e.target.value)}
                       className="px-4 py-2 bg-white bg-opacity-10 backdrop-blur-xl rounded-lg border border-white border-opacity-20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
-                      <option value="all">All Users</option>
-                      <option value="student">Students</option>
-                      <option value="instructor">Instructors</option>
+                    <option className="bg-slate-800 text-white" value="all">All Users</option>
+  <option className="bg-slate-800 text-white" value="student">Students</option>
+  <option className="bg-slate-800 text-white" value="instructor">Instructors</option>
                     </select>
                    
                   </div>
@@ -451,15 +449,7 @@ const AdminDashboard = () => {
                 <div className="flex items-center justify-between">
                   <h2 className="text-2xl font-bold text-white">Course Management</h2>
                   <div className="flex items-center space-x-3">
-                    <select
-                      value={courseFilter}
-                      onChange={(e) => setCourseFilter(e.target.value)}
-                      className="px-4 py-2 bg-white bg-opacity-10 backdrop-blur-xl rounded-lg border border-white border-opacity-20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    >
-                      <option value="all">All Courses</option>
-                      <option value="active">Active</option>
-                      <option value="draft">Draft</option>
-                    </select>
+                    
                 
                   </div>
                 </div>

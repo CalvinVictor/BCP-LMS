@@ -379,13 +379,7 @@ const handleAddChapter = async () => {
               onChange={(e) => setNewCourse({ ...newCourse, thumbnail: e.target.value })}
               className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
             />
-            <input
-              type="number"
-              placeholder="Total Videos"
-              value={newCourse.totalVideos}
-              onChange={(e) => setNewCourse({ ...newCourse, totalVideos: e.target.value })}
-              className="w-full mb-3 px-4 py-2 rounded-lg bg-gray-700 text-white"
-            />
+            
 
             <div className="flex gap-4">
               <button

@@ -103,19 +103,13 @@ const CourseDetailPage = () => {
                     </div>
                 </div>
                 {/* --- ✅ VIDEO PLAYER SECTION --- */}
-                <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                    <ReactPlayer
-                        // Use the video URL from the first chapter as a preview.
-                        // Provide a fallback URL in case there are no chapters yet.
-                        url={course.chapters[0]?.videoURL || 'https://www.youtube.com/watch?v=cccccc'}
-                        width="100%"
-                        height="100%"
-                        controls={true}
-                        // Use the course thumbnail as a preview image for faster loading
-                        light={course.thumbnail || true} 
-                        playing
-                    />
-                </div>
+               <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
+            <img
+                src={course.thumbnail || `https://placehold.co/600x400/1e293b/ffffff?text=${encodeURIComponent(course.title)}`}
+                alt={`Thumbnail for ${course.title}`}
+                className="w-full h-full object-cover"
+            />
+        </div>
             </div>
         </header>
 

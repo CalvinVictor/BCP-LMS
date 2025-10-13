@@ -1,3 +1,5 @@
+// src/Components/Navbar.jsx (Corrected)
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, User, LogOut, Search, Menu, X, GraduationCap } from 'lucide-react';
@@ -18,7 +20,19 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const myLearningRef = useRef(null);
 
-  // Fetch enrolled courses for the dropdown
+  // ✅ FIX: Get the user's role from localStorage
+  const role = localStorage.getItem('role');
+
+  const getHomePath = () => {
+    if (role === 'instructor') {
+      return '/instructorhome';
+    }
+    if (role === 'admin') {
+      return '/adminhome';
+    }
+    return '/home';
+  };
+
   useEffect(() => {
     if (localStorage.getItem('token')) {
         const fetchEnrolled = async () => {
@@ -33,7 +47,6 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
     }
   }, []);
 
-  // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (myLearningRef.current && !myLearningRef.current.contains(event.target)) {
@@ -56,7 +69,7 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
-          <Link to="/home" className="flex items-center space-x-3">
+          <Link to={getHomePath()} className="flex items-center space-x-3">
             <SjuLogo />
             <h1 className="text-2xl font-bold text-white tracking-wide">
               St. Joseph's University
@@ -77,11 +90,14 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
                 />
               </div>
             )}
-            <Link to="/profile" className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors px-3 py-2 rounded-lg">
-              <User size={18} /><span>Profile</span>
-            </Link>
+
+            {/* ✅ FIX: Conditionally render the profile link. It will only show if the role is NOT 'instructor'. */}
+            {role !== 'instructor' && (
+              <Link to="/profile" className="flex items-center space-x-2 text-slate-300 hover:text-white transition-colors px-3 py-2 rounded-lg">
+                <User size={18} /><span>Profile</span>
+              </Link>
+            )}
             
-            {/* My Learning Dropdown */}
             <div className="relative" ref={myLearningRef}>
                 <button 
                     onClick={() => setIsMyLearningOpen(!isMyLearningOpen)}
@@ -138,9 +154,14 @@ const Navbar = ({ searchTerm, setSearchTerm, showSearch = true }) => {
                 />
               </div>
             )}
-          <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-3 text-slate-200 hover:bg-slate-700/50 block px-3 py-2 rounded-md text-base font-medium">
-            <User size={20} /><span>Profile</span>
-          </Link>
+          
+          {/* ✅ FIX: Add the same condition here for the mobile view */}
+          {role !== 'instructor' && (
+            <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-3 text-slate-200 hover:bg-slate-700/50 block px-3 py-2 rounded-md text-base font-medium">
+              <User size={20} /><span>Profile</span>
+            </Link>
+          )}
+
           <Link to="/my-learning" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center space-x-3 text-slate-200 hover:bg-slate-700/50 block px-3 py-2 rounded-md text-base font-medium">
             <GraduationCap size={20} /><span>My Learning</span>
           </Link>
